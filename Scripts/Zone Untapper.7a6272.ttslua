@@ -1,0 +1,56 @@
+-- http://steamcommunity.com/profiles/76561197968345269
+-- 2017 07 06
+
+function onload(save_state)
+	self.createButton({ click_function = 'untap',label = '', color = {0,0,0,0}, tooltip = 'Refresh All', function_owner = self,position = {0, 1.18, 0},rotation = {0, 0, 0},width = 2000,height = 2000,font_size = 250})
+	if self.getDescription()=='' then
+		setDefaultState()
+	end
+end
+
+function onSave()
+	return self.getDescription()
+end
+
+function setDefaultState()
+	self.setDescription(JSON.encode({zone="GUID_here", flip="yes"}))
+end
+
+function split(s, delimiter)
+	result = {};
+	for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+		table.insert(result, match);
+	end
+	return result;
+end
+
+function untap(clicked_object, player)
+	if self.getDescription()=="" then
+		setDefaultState()
+		printToAll('Warning - invalid description. Restored defaut configuration.', {0.8,0.5,0})
+	end
+
+	local data = JSON.decode(self.getDescription())
+	if data==nil then
+		setDefaultState()
+		data = JSON.decode(self.getDescription())
+		printToAll('Warning - invalid description. Restored defaut configuration.', {0.8,0.5,0})
+	end
+
+	for num,zoneGUID in pairs(split(data.zone, ";")) do
+		zone=getObjectFromGUID(zoneGUID)
+		if zone!=nil and zone.tag=="Scripting" then
+			for k,v in pairs(zone.getObjects()) do
+				if v.tag=="Card" then
+					if data.flip=="no" then
+						v.setRotation({0,180,0})
+					else
+						v.setRotation(self.getRotation())
+					end
+				end
+			end
+		else
+			printToAll("I can't find zone from desctiption - " .. zoneGUID, {0.8,0.5,0})
+		end
+	end
+end

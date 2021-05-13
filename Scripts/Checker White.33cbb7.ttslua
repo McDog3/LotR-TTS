@@ -1,0 +1,241 @@
+--The "Build Deck" button at the top-left
+
+decklistTextGUID = '8848e5'
+zoneBagGUID = '36c7bf'
+
+CACHE = {
+    object = {},
+    bag = {}
+}
+
+function onLoad()
+    self.createButton({
+        click_function = 'buildDeck',
+        function_owner = self,
+        label = 'Build Deck',
+        position = { 0, 0.6, 0 },
+        rotation = { 0, 0, 0 },
+        color = { 1, 1, 1},
+        font_color = { 0, 0, 0 },
+        width = 1000,
+        height = 350,
+        font_size = 200,
+        scale = { 3.8, 3.8, 3.8 }
+    })
+end
+
+function buildDeck(obj, player)
+    local textBox = getObjectCache(decklistTextGUID)
+
+    if textBox == nil then
+        return
+    end
+
+    buildBagList()
+
+    CACHE.pos = obj.getPosition()
+
+    if string.find(textBox.TextTool.getValue(), 'Main Deck') then
+        startLuaCoroutine(self, 'fetchCard')
+    else
+        broadcastToColor('Invalid Deck. Use RINGSDB.COM', player)
+    end
+end
+
+function buildBagList()
+    local zone = getObjectCache(zoneBagGUID)
+
+    CACHE.bag = {}
+
+    if zone ~= nil then
+        local objects = zone.getObjects()
+
+        for i = 1, #objects do
+            if objects[i].tag == 'Bag' then
+                CACHE.bag[getKey(objects[i].getName())] = objects[i]
+            end
+        end
+    end
+end
+
+function fetchCard()
+    local textBox = getObjectCache(decklistTextGUID)
+
+    if textBox == nil then
+        return 1
+    end
+
+    local deckData = textBox.TextTool.getValue()
+    local processedDeck = {}
+
+    for line in string.gmatch(deckData, '[^\r\n]+') do
+        local c, n, k = line:match("(%d+)x%s+(.-)%s+%((.*)%)")
+
+        if c ~= nil then
+            table.insert(processedDeck, {
+                bag = getKey(k),
+                name = getKey(n),
+                count = tonumber(c)
+            })
+        else
+            n, k = line:match("^%s*(.-)%s+%((.*)%)")
+
+            if k ~= nil and tonumber(k) == nil then
+                table.insert(processedDeck, {
+                    bag = getKey(k),
+                    name = getKey(n),
+                    count = 0
+                })
+            end
+        end
+    end
+
+    local pos = CACHE.pos
+    local offsetY = 2
+
+    for _, v in ipairs(processedDeck) do
+        local bag = CACHE.bag[v.bag]
+
+        if bag ~= nil then
+            local cards = bag.getObjects()
+
+            for i = 1, #cards do
+                if v.name == getKey(cards[i].name) then
+                    local cnt = v.count
+
+                    if cnt == 0 then
+                        cnt = 1
+                    end
+
+                    local card
+
+                    for z = 1, cnt do
+                        local params = {
+                            smooth = false,
+                            index = cards[i].index,
+                        }
+
+                        if v.count == 0 then
+                            params.position = { pos.x - 2.5, pos.y + offsetY, pos.z + 7 }
+                            params.rotation = { 0, 180, 0 }
+                        else
+                            params.position = { pos.x + 2.5, pos.y + offsetY, pos.z + 7 }
+                            params.rotation = { 0, 180, 180 }
+                        end
+
+                        if z > 1 and card ~= nil then
+                            local clone = card:clone()
+                            clone.setPosition(params.position)
+                        else
+                            card = getCard(bag, params)
+                        end
+
+                        offsetY = offsetY + 0.25
+
+                        coroutine.yield(0)
+                    end
+                end
+            end
+        end
+    end
+
+    return 1
+end
+
+function getCard(bag, takeParams)
+    local pos = bag.getPosition()
+
+    local bagClone = bag:clone()
+    bagClone.setPosition({ pos.x, pos.y + 10, pos.z })
+
+    local card = bagClone.takeObject(takeParams)
+
+    bagClone.destruct()
+
+    return card
+end
+
+function setString(str)
+    --gsub('[%p%c%s]', '')
+    str = string.lower(str)
+    str = str:gsub('[%p%c%s]', '')
+    return str
+end
+
+function stripChars(str)
+    local tableAccents = {}
+    local normalizedString = ""
+
+    tableAccents["à"] = "a"
+    tableAccents["á"] = "a"
+    tableAccents["â"] = "a"
+    tableAccents["ã"] = "a"
+    tableAccents["ä"] = "a"
+    tableAccents["ç"] = "c"
+    tableAccents["è"] = "e"
+    tableAccents["é"] = "e"
+    tableAccents["ê"] = "e"
+    tableAccents["ë"] = "e"
+    tableAccents["ì"] = "i"
+    tableAccents["í"] = "i"
+    tableAccents["î"] = "i"
+    tableAccents["ï"] = "i"
+    tableAccents["ñ"] = "n"
+    tableAccents["ò"] = "o"
+    tableAccents["ó"] = "o"
+    tableAccents["ô"] = "o"
+    tableAccents["õ"] = "o"
+    tableAccents["ö"] = "o"
+    tableAccents["ù"] = "u"
+    tableAccents["ú"] = "u"
+    tableAccents["û"] = "u"
+    tableAccents["ü"] = "u"
+    tableAccents["ý"] = "y"
+    tableAccents["ÿ"] = "y"
+    tableAccents["À"] = "A"
+    tableAccents["Á"] = "A"
+    tableAccents["Â"] = "A"
+    tableAccents["Ã"] = "A"
+    tableAccents["Ä"] = "A"
+    tableAccents["Ç"] = "C"
+    tableAccents["È"] = "E"
+    tableAccents["É"] = "E"
+    tableAccents["Ê"] = "E"
+    tableAccents["Ë"] = "E"
+    tableAccents["Ì"] = "I"
+    tableAccents["Í"] = "I"
+    tableAccents["Î"] = "I"
+    tableAccents["Ï"] = "I"
+    tableAccents["Ñ"] = "N"
+    tableAccents["Ò"] = "O"
+    tableAccents["Ó"] = "O"
+    tableAccents["Ô"] = "O"
+    tableAccents["Õ"] = "O"
+    tableAccents["Ö"] = "O"
+    tableAccents["Ù"] = "U"
+    tableAccents["Ú"] = "U"
+    tableAccents["Û"] = "U"
+    tableAccents["Ü"] = "U"
+    tableAccents["Ý"] = "Y"
+
+    for strChar in string.gmatch(str, "([%z\1-\127\194-\244][\128-\191]*)") do
+        if tableAccents[strChar] ~= nil then
+            normalizedString = normalizedString .. tableAccents[strChar]
+        else
+            normalizedString = normalizedString .. strChar
+        end
+    end
+
+    return normalizedString
+end
+
+function getObjectCache(id)
+    if CACHE.object[id] == nil then
+        CACHE.object[id] = getObjectFromGUID(id)
+    end
+    return CACHE.object[id]
+end
+
+function getKey(name)
+    return setString(stripChars(name))
+end

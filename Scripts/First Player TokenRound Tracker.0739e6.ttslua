@@ -1,0 +1,98 @@
+value = 0
+
+function onSave()
+    local data_to_save = {v=value}
+    saved_data = JSON.encode(data_to_save)
+    --saved_data = "" --Remove -- at start & save to clear save data
+    return saved_data
+end
+
+function onLoad(saved_data)
+    -- Loads the tracking for if the game has started yet
+    if saved_data ~= "" then
+        local loaded_data = JSON.decode(saved_data)
+        value = loaded_data.v
+    else
+        value = 0
+    end
+end
+
+
+function updatevalue(n)
+    local oldVal = value
+    if n == 0 then value = 0 else value = value + n end
+ 
+    self.editButton({index=bIndex(tostring(value)), label=value})
+end
+
+ function clear()
+     updatevalue(0)
+ end
+
+ function plus()
+     updatevalue(1)
+ end
+
+ function minus()
+     updatevalue(-1)
+ end
+
+function onload()
+    makeButtons()
+end
+
+function makeButtons(set)
+    local buttons = {}
+ --************************** DEFAULT **************************************
+    if set == nil then
+        local button = {
+            click_function = 'doNothing',
+            function_owner = self,
+            label = tostring(value),
+            position = {0, 0.2, 0},
+            width = 0,
+            height = 0,
+            font_size = 500,
+            scale ={1.2,1.2,1.2},
+            font_color = stringColorToRGB('White')}
+        table.insert(buttons, button)
+        button = {
+            click_function = 'plus',
+            function_owner = self,
+            label = '+',
+            position = {1.3, 0.2, 0},
+            width = 150,
+            height = 150,
+            font_size = 200,
+            scale = {2.7,2.7,2.7},
+            font_color = {0,0,0}}
+        table.insert(buttons, button)
+        button = {
+            click_function = 'minus',
+            function_owner = self,
+            label = '-',
+            position = {-1.3, 0.2, 0},
+            width = 150,
+            height = 150,
+            font_size = 200,
+            scale = {2.7,2.7,2.7},
+            font_color = {0,0,0}}
+        table.insert(buttons, button)
+    end
+ --************************* END BUTTONS **************************************
+ -- Create Buttons
+    for _, button in ipairs(buttons) do
+        self.createButton(button)
+    end
+end
+function doNothing()end
+
+-- Find Button index
+function bIndex(label)
+    local aButtons = self.getButtons()
+    for _, B in pairs(aButtons) do
+        if B.click_function == label then
+            return B.index
+        end
+    end
+end
