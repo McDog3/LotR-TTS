@@ -295,10 +295,10 @@ function get_deck()
     end
 
 --params.position = { pos.x - 2.5, pos.y + offsetY, pos.z + 7 }
---params.rotation = { 0, 180, 0 }
-    heroPos = self.positionToWorld({0,0.5,0})
-    deckPos = self.positionToWorld({0,0,0})
-    sideboardPos = self.positionToWorld({0,-0.5,0})
+--params.rotation = { 0, 180, 0 } 273495
+    heroPos = self.positionToWorld({-6,0.5,-5})
+    deckPos = self.positionToWorld({0,0.5,-5})
+    sideboardPos = self.positionToWorld({6,-0.5,-5})
 
 
     -- Get deck from RingsDB..
@@ -314,12 +314,13 @@ function deckReadCallback(req)
   -- Result check..
   if req.is_done and not req.is_error
   then
-    if string.find(req.text, "<!DOCTYPE html>")
+      --TODO: Change this error to only occur when deck isn't visible, this errors on private "visible" decks.
+    if string.find(req.text, "You are not allowed to view this deck")
     then
       broadcastToAll("Private deck "..deckID.." is not shared", {0.5,0.5,0.5})
       return
     end
-    JsonDeckRes = JSON.decode(req.text)
+    JsonDeckRes = parseDeckToJSON(req)
   else
     print (req.error)
     return
@@ -333,13 +334,7 @@ function deckReadCallback(req)
   end
   -- Count number of cards in decklist
   numCards=0
-  for cardid,number in
-  pairs(JsonDeckRes.heroes)
-  do
-      numCards = numCards + 1
-  end
-  for cardid,number in
-  pairs(JsonDeckRes.slots)
+  for cardid,number in pairs(JsonDeckRes.slots)--heroes are contained in the slots section of json as well as heroes
   do
     numCards = numCards + 1
   end
@@ -350,36 +345,62 @@ function deckReadCallback(req)
   end
 
   -- Save card id, number in table and request card info from ArkhamDB
+  --TODO: cardList needs to be separated between hero / slot / sideboard. Right now they are self-destructive to eachother
+  --Most commonly will happen if a card that is in a slot has other copies of itself in the sideboard. (the sideboard will get the copies while the deck will not receive any)
   for cardID,number in pairs(JsonDeckRes.heroes)
   do
-      local row = {}
-      row.cardName = ""
-      row.cardCount = number
-      row.type = "hero"
-      cardList[cardID] = row
+      print("Heroes"..cardID)
+      local rowHero = {}
+      rowHero.cardName = ""
+      rowHero.cardCount = number
+      rowHero.cardType = "hero"
+      cardList[cardID] = rowHero
       WebRequest.get(cardURL .. cardID, self, 'cardReadCallback')
       totalCards = totalCards + number
   end
   for cardID,number in pairs(JsonDeckRes.slots)
   do
-    local row = {}
-    row.cardName = ""
-    row.cardCount = number
-    row.type = "slot"
-    cardList[cardID] = row
-    WebRequest.get(cardURL .. cardID, self, 'cardReadCallback')
-    totalCards = totalCards + number
+      if (cardList[cardID] == nil) then --Don't add if already in hero list
+          local rowSlot = {}
+          rowSlot.cardName = ""
+          rowSlot.cardCount = number
+          rowSlot.cardType = "slot"
+          cardList[cardID] = rowSlot
+          WebRequest.get(cardURL .. cardID, self, 'cardReadCallback')
+          totalCards = totalCards + number
+      end
   end
   for cardID,number in pairs(JsonDeckRes.sideslots)
   do
-    local row = {}
-    row.cardName = ""
-    row.cardCount = number
-    row.type = "sideboard"
-    cardList[cardID] = row
+    local rowSideboard = {}
+    rowSideboard.cardName = ""
+    rowSideboard.cardCount = number
+    rowSideboard.cardType = "sideboard"
+    cardList[cardID] = rowSideboard
     WebRequest.get(cardURL .. cardID, self, 'cardReadCallback')
     totalCards = totalCards + number
   end
+end
+
+function parseDeckToJSON(request)
+    --20758 PUBLIC
+    --273495 PRIVATE
+    local jsonResponse
+    if privateDeck then
+        local DECK_VIEW_START = "app%.deck%.init%(%{"
+        local DECK_VIEW_END = "%}%)%;"
+        local DECK_VIEW_START_OFFSET = 14
+        if string.find(request.text, DECK_VIEW_START) then
+            local startIndex = string.find(request.text, DECK_VIEW_START) + DECK_VIEW_START_OFFSET
+            local resultSubString = string.sub(request.text, startIndex)
+            local endIndex = string.find(resultSubString, DECK_VIEW_END)
+            local finalJsonString = string.sub(resultSubString, 0, endIndex)
+            jsonResponse = JSON.decode(finalJsonString)
+        end
+    else
+        jsonResponse = JSON.decode(request.text)
+    end
+    return jsonResponse
 end
 
 function cardReadCallback(req)
@@ -394,24 +415,16 @@ function cardReadCallback(req)
     return
   end
 
+  print(cardList[JsonCardRes.code].cardType)
   cardList[JsonCardRes.code].cardName = getKey(JsonCardRes.name)
   cardList[JsonCardRes.code].packName = getKey(JsonCardRes.pack_name)
-
+  print(cardList[JsonCardRes.code].cardType)
   --TODO: Remove this oddity:
   if JsonCardRes.code == "17062" then
       cardList[JsonCardRes.code].cardName = "dnedainlookout"
   end
-  -- Check for more complicated bonding cards
---  for k,v in pairs(bondedCardsBoolean) do
---    if (v.name == JsonCardRes.real_name and cardList[v.bondedCode] == nil)
---    then
---      local row = {}
---      row.cardName = v.bondedName
---      row.cardCount = v.bondCount
---      row.permanent = true
---      cardList[v.bondedCode] = row
---    end
---  end
+
+  --TODO: Figure out how to handle MotK Allies :(
 
   -- Update number of processed slots, if complete, start building the deck
   doneSlots = doneSlots + 1
@@ -423,7 +436,8 @@ end
 
 function createDeck()
   for k,v in pairs(cardList) do
-    searchForCard(v.cardName, v.packName, v.cardCount, v.type)
+      print("Type"..v.cardType)
+    searchForCard(v.cardName, v.packName, v.cardCount, v.cardType)
   end
 end
 
@@ -432,10 +446,6 @@ function searchForCard(cardName, packName, cardCount, type)
   local allCards = bag.getObjects()
 
   for k,v in pairs(allCards) do
-    --for i = 1, #allCards do
-    if packName == "beneaththesands" then
-        print("Looking for "..cardName.." Found: "..v.name.." OR "..getKey(v.name))
-    end
     if getKey(v.name) == cardName then
         bag.takeObject({
           position = {0, 1.5, 0},
@@ -445,7 +455,7 @@ function searchForCard(cardName, packName, cardCount, type)
           smooth = false,
           params = { cardName, cardCount, type, bag, v.guid }
         })
-        print('Added '.. cardCount .. ' of ' .. cardName .. ' from ' .. packName)
+        print('Added '.. cardCount .. ' of ' .. cardName .. ' to ' .. type .. ' from ' .. packName)
         return
     end
   end
@@ -453,14 +463,14 @@ function searchForCard(cardName, packName, cardCount, type)
 end
 
 function cardTaken(card, params)
-  -- Check destination deck (permanent?)
+  -- Check destination deck (permanent?) 280045
     local destPos
     local rotation = self.getRotation()
-    if (params[3] == "hero") then -- permanent card
+    if params[3] == "hero" then
         destPos = heroPos
-    elseif (params[3] == "slot") then
+    elseif params[3] == "slot" then
         destPos = deckPos
-        rotation = rotation + Vector(0, 0, 180) -- Flip non-permanents facedown
+        rotation = rotation + Vector(0, 0, 180) -- Flip player cards facedown
     else
         destPos = sideboardPos
     end
@@ -497,7 +507,7 @@ function makeText()
   input_parameters.font_size = 450
   input_parameters.tooltip = "*****PLEASE USE AN UNPUBLISHED DECK IF JUST FOR TTS TO AVOID FLOODING ARKHAMDB PUBLISHED DECK LISTS!*****\nInput deck ID from ArkhamDB URL of the deck\nExample: For the URL 'https://arkhamdb.com/decklist/view/101/knowledge-overwhelming-solo-deck-1.0', you should input '101'"
   input_parameters.alignment = 3 -- (1 = Automatic, 2 = Left, 3 = Center, 4 = Right, 5 = Justified) –Optional
-  input_parameters.value="123456"
+  input_parameters.value="280045"
   input_parameters.label = "INPUT HERE"
   input_parameters.color = {0.9,0.7,0.5}
   input_parameters.validation = 2
