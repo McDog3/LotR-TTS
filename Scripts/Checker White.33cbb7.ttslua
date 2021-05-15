@@ -1,43 +1,62 @@
+--[[ Lua code. See documentation: https://api.tabletopsimulator.com/ --]]
 --The "Build Deck" button at the top-left
-
-decklistTextGUID = '8848e5'
-zoneBagGUID = '36c7bf'
+ZONE_BAG_GUID = '36c7bf'
 
 CACHE = {
     object = {},
     bag = {}
 }
 
---function onLoad()
+CARD_LISTS = {
+    heroCardList = {},
+    deckCardList = {},
+    sideboardCardList = {}
+}
 
---end
+DECK_STATS = {
+    totalCards = 0,
+    cardsRetrieved = 0
+}
 
-function buildDeck(obj, player)
-    local textBox = getObjectCache(decklistTextGUID)
+RINGSDB_INFO = {
+    publicDeckURL="https://ringsdb.com/api/public/decklist/",
+    privateDeckURL="https://ringsdb.com/deck/view/",
+    cardURL="https://ringsdb.com/api/public/card/"
+}
 
-    if textBox == nil then
-        return
-    end
+DECK_BUILDER_STATE = {
+    isPrivateDeck = true,
+    deckId = nil,
+    contractPos = self.positionToWorld({-12,0.6,-7.5}), --{15,0.5,-12.5}
+    heroPos = self.positionToWorld({-17.7,0.6,-7.5}),
+    deckPos = self.positionToWorld({-17.7,0.6,-1.9}),
+    sideboardPos = self.positionToWorld({-12,0.6,-1.9})
+}
 
+--[[ The onLoad event is called after the game save finishes loading. --]]
+function onLoad()
+    log("DeckBuilder Loading...")
+    resetDeckData()
     buildBagList()
+    createInputBox()
+    createBuildDeckButton()
+    createPublicPrivateButton()
+    log("DeckBuilder Loaded Successfully!")
+end
 
-    CACHE.pos = obj.getPosition()
-
-    if string.find(textBox.TextTool.getValue(), 'Main Deck') then
-        startLuaCoroutine(self, 'fetchCard')
-    else
-        broadcastToColor('Invalid Deck. Use RINGSDB.COM', player)
-    end
+function resetDeckData()
+    CARD_LISTS.heroCardList = {}
+    CARD_LISTS.deckCardList = {}
+    CARD_LISTS.sideboardCardList = {}
+    DECK_STATS.totalCards = 0
+    DECK_STATS.cardsRetrieved = 0
 end
 
 function buildBagList()
-    local zone = getObjectCache(zoneBagGUID)
-
+    local zone = getObjectCache(ZONE_BAG_GUID)
     CACHE.bag = {}
-
     if zone ~= nil then
         local objects = zone.getObjects()
-
         for i = 1, #objects do
             if objects[i].tag == 'Bag' then
                 CACHE.bag[getKey(objects[i].getName())] = objects[i]
@@ -46,105 +65,19 @@ function buildBagList()
     end
 end
 
-function fetchCard()
-    local textBox = getObjectCache(decklistTextGUID)
-
-    if textBox == nil then
-        return 1
+function getObjectCache(id)
+    if CACHE.object[id] == nil then
+        CACHE.object[id] = getObjectFromGUID(id)
     end
-
-    local deckData = textBox.TextTool.getValue()
-    local processedDeck = {}
-
-    for line in string.gmatch(deckData, '[^\r\n]+') do
-        local c, n, k = line:match("(%d+)x%s+(.-)%s+%((.*)%)")
-
-        if c ~= nil then
-            table.insert(processedDeck, {
-                bag = getKey(k),
-                name = getKey(n),
-                count = tonumber(c)
-            })
-        else
-            n, k = line:match("^%s*(.-)%s+%((.*)%)")
-
-            if k ~= nil and tonumber(k) == nil then
-                table.insert(processedDeck, {
-                    bag = getKey(k),
-                    name = getKey(n),
-                    count = 0
-                })
-            end
-        end
-    end
-
-    local pos = CACHE.pos
-    local offsetY = 2
-
-    for _, v in ipairs(processedDeck) do
-        local bag = CACHE.bag[v.bag]
-
-        if bag ~= nil then
-            local cards = bag.getObjects()
-
-            for i = 1, #cards do
-                if v.name == getKey(cards[i].name) then
-                    local cnt = v.count
-
-                    if cnt == 0 then
-                        cnt = 1
-                    end
-
-                    local card
-
-                    for z = 1, cnt do
-                        local params = {
-                            smooth = false,
-                            index = cards[i].index,
-                        }
-
-                        if v.count == 0 then
-                            params.position = { pos.x - 2.5, pos.y + offsetY, pos.z + 7 }
-                            params.rotation = { 0, 180, 0 }
-                        else
-                            params.position = { pos.x + 2.5, pos.y + offsetY, pos.z + 7 }
-                            params.rotation = { 0, 180, 180 }
-                        end
-
-                        if z > 1 and card ~= nil then
-                            local clone = card:clone()
-                            clone.setPosition(params.position)
-                        else
-                            card = getCard(bag, params)
-                        end
-
-                        offsetY = offsetY + 0.25
-
-                        coroutine.yield(0)
-                    end
-                end
-            end
-        end
-    end
-
-    return 1
+    return CACHE.object[id]
 end
 
-function getCard(bag, takeParams)
-    local pos = bag.getPosition()
-
-    local bagClone = bag:clone()
-    bagClone.setPosition({ pos.x, pos.y + 10, pos.z })
-
-    local card = bagClone.takeObject(takeParams)
-
-    bagClone.destruct()
-
-    return card
+--TODO: Eventually replace this whole identification system with the card guids. This is silly.
+function getKey(name)
+    return setString(stripChars(name))
 end
 
 function setString(str)
-    --gsub('[%p%c%s]', '')
     str = string.lower(str)
     str = str:gsub('[%p%c%s]', '')
     return str
@@ -153,7 +86,6 @@ end
 function stripChars(str)
     local tableAccents = {}
     local normalizedString = ""
-
     tableAccents["à"] = "a"
     tableAccents["á"] = "a"
     tableAccents["â"] = "a"
@@ -218,96 +150,43 @@ function stripChars(str)
     return normalizedString
 end
 
-function getObjectCache(id)
-    if CACHE.object[id] == nil then
-        CACHE.object[id] = getObjectFromGUID(id)
-    end
-    return CACHE.object[id]
+--######################################################################################################
+--# Build Deck Functionality
+--######################################################################################################
+function createBuildDeckButton()
+  local button_parameters = {}
+  button_parameters.click_function = "buildDeckButtonClicked"
+  button_parameters.function_owner = self
+  button_parameters.position = {18,0.6,-15}
+  button_parameters.font_size = 200
+  button_parameters.width = 950
+  button_parameters.height = 270
+  button_parameters.tooltip = "Click to build your deck!"
+  button_parameters.label = "Build Deck"
+  button_parameters.scale = {3,3,3}
+  self.createButton(button_parameters)
 end
 
-function getKey(name)
-    return setString(stripChars(name))
+function buildDeckButtonClicked()
+  resetDeckData()
+  buildDeck()
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
---[[ Lua code. See documentation: https://api.tabletopsimulator.com/ --]]
-
---[[ The onLoad event is called after the game save finishes loading. --]]
-function onLoad()
-  print('Loading Deck Builder')
-  self.createButton({
-      click_function = 'buildDeck',
-      function_owner = self,
-      label = 'Build Deck',
-      position = { 0, 0.6, 0 },
-      rotation = { 0, 0, 0 },
-      color = { 1, 1, 1},
-      font_color = { 0, 0, 0 },
-      width = 1000,
-      height = 350,
-      font_size = 200,
-      scale = { 3.8, 3.8, 3.8 }
-  })
-  init()
-  -- Setup...
-  publicDeckURL="https://ringsdb.com/api/public/decklist/"
-  privateDeckURL="https://ringsdb.com/deck/view/"
-  cardURL="https://ringsdb.com/api/public/card/"
-  --subnameCards={{name="Randolph Carter",xp=0},{name="Dream Diary",xp=3},{name="Relic of Ages",xp=0},{name="The Necronomicon",xp=0},{name="Archaic Glyphs",xp=3},{name="Strange Solution",xp=4},{name="Forbidden Tome",xp=3},{name="Relic of Ages",xp=0}, {name="Ancient Stone",xp=4}, {"Dream Diary",xp=0},{name="Empower Self",xp=2}}
-  --extraPermanents={["Duke"]=true,["Sophie"]=true,["Gate Box"]=true,["Dark Insight"]=true}
-  --multiClassCards={{name=".45 Thompson",xp=3},{name="Scroll of Secrets",xp=3},{name="Tennessee Sour Mash",xp=3},{name="Enchanted Blade",xp=3},{name="Grisly Totem",xp=3}}
-  --returningCards={{name="On Your Own"}}
-  --advancedSignatures={{name="Daisy's Tote Bag"},{name="The Necronomicon"},{name="On the Lam"},{name="Hospital Debts"},{name="Dark Memory"},{name="Heirloom of Hyperborea"}}
-  --bondedCardsOneThree={{name="Hallowed Mirror",bondedName="Soothing Melody",bondedCode=05314},{name="Occult Lexicon",bondedName="Blood-Rite",bondedCode=05317},{name="The Hungering Blade",bondedName="Bloodlust",bondedCode=06019},{name="Nightmare Bauble",bondedName="Dream Parasite",bondedCode=06331},{name="Miss Doyle",bondedName="Hope",bondedCode=06031,bondedNameSecond="Zeal",bondedCodeSecond=06032,bondedNameThird="Augur",bondedCodeThird=06033}}
-  --bondedCardsBoolean = {{name="Gate Box",bondedName="Dream-Gate",bondedCode="06015a",bondCount=1},{name="Crystallizer of Dreams",bondedName="Guardian of the Crystallizer",bondedCode=06025,bondCount=2},{name="Dream Diary",bondedName="Essence of the Dream",bondedCode=06113,bondCount=1},{name="Empty Vessel",bondedName="Wish Eater",bondedCode=06277,bondCount=1},{name="Segment of Onyx",bondedName="Pendant of the Queen",bondedCode=06022,bondCount=1},{name="Stargazing",bondedName="The Stars Are Right",bondedCode=06028,bondCount=2},{name="Summoned Hound",bondedName="Unbound Beast",bondedCode=06283,bondCount=2}}
-  privateDeck = true
-
-  buildBagList()
-  makeText()
-  makeButton()
-  makeCheckboxPP()
-
-  --all_cards_bag = getObjectFromGUID("36c7bf")
-end
-
-function init()
-  cardList = {}
-  doneSlots = 0
-  totalCards = 0
-end
-
--- Previously this was "spawnZone"
-function get_deck()
-    if deckID == nil then
+function buildDeck()
+    if DECK_BUILDER_STATE.deckId == nil then
        broadcastToAll("Deck ID required", {0.5,0.5,0.5})
        return 1
     end
 
---params.position = { pos.x - 2.5, pos.y + offsetY, pos.z + 7 }
---params.rotation = { 0, 180, 0 } 273495
-    heroPos = self.positionToWorld({-6,0.5,-5})
-    deckPos = self.positionToWorld({0,0.5,-5})
-    sideboardPos = self.positionToWorld({6,-0.5,-5})
-
-
     -- Get deck from RingsDB..
     local deckURL
-    if privateDeck then deckURL = privateDeckURL
-    else deckURL = publicDeckURL
+    if DECK_BUILDER_STATE.isPrivateDeck then
+        deckURL = RINGSDB_INFO.privateDeckURL
+    else
+        deckURL = RINGSDB_INFO.publicDeckURL
     end
 
-    WebRequest.get(deckURL .. deckID, self, 'deckReadCallback')
+    WebRequest.get(deckURL .. DECK_BUILDER_STATE.deckId, self, 'deckReadCallback')
 end
 
 function deckReadCallback(req)
@@ -317,12 +196,12 @@ function deckReadCallback(req)
       --TODO: Change this error to only occur when deck isn't visible, this errors on private "visible" decks.
     if string.find(req.text, "You are not allowed to view this deck")
     then
-      broadcastToAll("Private deck "..deckID.." is not shared", {0.5,0.5,0.5})
+      broadcastToAll("Private deck "..DECK_BUILDER_STATE.deckId.." is not shared", {0.5,0.5,0.5})
       return
     end
     JsonDeckRes = parseDeckToJSON(req)
   else
-    print (req.error)
+    log(req.error)
     return
   end
   if (JsonDeckRes == nil)
@@ -330,44 +209,40 @@ function deckReadCallback(req)
     broadcastToAll("Deck not found!", {0.5,0.5,0.5})
     return
   else
-    print("Found decklist: "..JsonDeckRes.name)
+    log("Found decklist: "..JsonDeckRes.name)
   end
   -- Count number of cards in decklist
-  numCards=0
-  for cardid,number in pairs(JsonDeckRes.slots)--heroes are contained in the slots section of json as well as heroes
+  --numCards=0
+  for cardid,number in pairs(JsonDeckRes.slots)--heroes/contracts are also contained in the slots section of json
   do
-    numCards = numCards + 1
+    DECK_STATS.totalCards = DECK_STATS.totalCards + 1
   end
   for cardid,number in
   pairs(JsonDeckRes.sideslots)
   do
-    numCards = numCards + 1
+    DECK_STATS.totalCards = DECK_STATS.totalCards + 1
   end
 
-  -- Save card id, number in table and request card info from ArkhamDB
-  --TODO: cardList needs to be separated between hero / slot / sideboard. Right now they are self-destructive to eachother
-  --Most commonly will happen if a card that is in a slot has other copies of itself in the sideboard. (the sideboard will get the copies while the deck will not receive any)
   for cardID,number in pairs(JsonDeckRes.heroes)
   do
-      print("Heroes"..cardID)
       local rowHero = {}
       rowHero.cardName = ""
       rowHero.cardCount = number
       rowHero.cardType = "hero"
-      cardList[cardID] = rowHero
-      WebRequest.get(cardURL .. cardID, self, 'cardReadCallback')
-      totalCards = totalCards + number
+      CARD_LISTS.heroCardList[cardID] = rowHero
+      WebRequest.get(RINGSDB_INFO.cardURL .. cardID, self, 'cardReadCallback')
+      --totalCards = totalCards + number
   end
   for cardID,number in pairs(JsonDeckRes.slots)
   do
-      if (cardList[cardID] == nil) then --Don't add if already in hero list
+      if CARD_LISTS.heroCardList[cardID] == nil then
           local rowSlot = {}
           rowSlot.cardName = ""
           rowSlot.cardCount = number
-          rowSlot.cardType = "slot"
-          cardList[cardID] = rowSlot
-          WebRequest.get(cardURL .. cardID, self, 'cardReadCallback')
-          totalCards = totalCards + number
+          rowSlot.cardType = "deck"
+          CARD_LISTS.deckCardList[cardID] = rowSlot
+          WebRequest.get(RINGSDB_INFO.cardURL .. cardID, self, 'cardReadCallback')
+          --totalCards = totalCards + number
       end
   end
   for cardID,number in pairs(JsonDeckRes.sideslots)
@@ -376,17 +251,15 @@ function deckReadCallback(req)
     rowSideboard.cardName = ""
     rowSideboard.cardCount = number
     rowSideboard.cardType = "sideboard"
-    cardList[cardID] = rowSideboard
-    WebRequest.get(cardURL .. cardID, self, 'cardReadCallback')
-    totalCards = totalCards + number
+    CARD_LISTS.sideboardCardList[cardID] = rowSideboard
+    WebRequest.get(RINGSDB_INFO.cardURL .. cardID, self, 'cardReadCallback')
+    --totalCards = totalCards + number
   end
 end
 
 function parseDeckToJSON(request)
-    --20758 PUBLIC
-    --273495 PRIVATE
     local jsonResponse
-    if privateDeck then
+    if DECK_BUILDER_STATE.isPrivateDeck then
         local DECK_VIEW_START = "app%.deck%.init%(%{"
         local DECK_VIEW_END = "%}%)%;"
         local DECK_VIEW_START_OFFSET = 14
@@ -411,38 +284,60 @@ function cardReadCallback(req)
     local tmpText = string.gsub(req.text,"\\u(%w%w%w%w)", convertHexToDec)
     JsonCardRes = JSON.decode(tmpText)
   else
-    print(req.error)
+    log(req.error)
     return
   end
 
-  print(cardList[JsonCardRes.code].cardType)
-  cardList[JsonCardRes.code].cardName = getKey(JsonCardRes.name)
-  cardList[JsonCardRes.code].packName = getKey(JsonCardRes.pack_name)
-  print(cardList[JsonCardRes.code].cardType)
-  --TODO: Remove this oddity:
-  if JsonCardRes.code == "17062" then
-      cardList[JsonCardRes.code].cardName = "dnedainlookout"
+  if CARD_LISTS.heroCardList[JsonCardRes.code] ~= nil then
+      CARD_LISTS.heroCardList[JsonCardRes.code].cardName = getKey(JsonCardRes.name)
+      CARD_LISTS.heroCardList[JsonCardRes.code].packName = getKey(JsonCardRes.pack_name)
+  end
+
+  if CARD_LISTS.deckCardList[JsonCardRes.code] ~= nil then
+      if JsonCardRes.type_code == "contract" then
+          CARD_LISTS.deckCardList[JsonCardRes.code].cardType = "contract"
+      end
+      CARD_LISTS.deckCardList[JsonCardRes.code].cardName = getKey(JsonCardRes.name)
+      CARD_LISTS.deckCardList[JsonCardRes.code].packName = getKey(JsonCardRes.pack_name)
+      --TODO: Remove this oddity:
+      if JsonCardRes.code == "17062" then
+          CARD_LISTS.deckCardList[JsonCardRes.code].cardName = "dnedainlookout"
+      end
+  end
+
+  if CARD_LISTS.sideboardCardList[JsonCardRes.code] ~= nil then
+      CARD_LISTS.sideboardCardList[JsonCardRes.code].cardName = getKey(JsonCardRes.name)
+      CARD_LISTS.sideboardCardList[JsonCardRes.code].packName = getKey(JsonCardRes.pack_name)
+      --TODO: Remove this oddity:
+      if JsonCardRes.code == "17062" then
+          CARD_LISTS.sideboardCardList[JsonCardRes.code].cardName = "dnedainlookout"
+      end
   end
 
   --TODO: Figure out how to handle MotK Allies :(
 
-  -- Update number of processed slots, if complete, start building the deck
-  doneSlots = doneSlots + 1
-  if (doneSlots == numCards)
+  -- Update number of cards retrieved from RingsDB. If complete, start building the deck
+  DECK_STATS.cardsRetrieved = DECK_STATS.cardsRetrieved + 1
+  if (DECK_STATS.cardsRetrieved == DECK_STATS.totalCards)
   then
     createDeck()
   end
 end
 
 function createDeck()
-  for k,v in pairs(cardList) do
-      print("Type"..v.cardType)
+  for k,v in pairs(CARD_LISTS.heroCardList) do
+    searchForCard(v.cardName, v.packName, v.cardCount, v.cardType)
+  end
+  for k,v in pairs(CARD_LISTS.deckCardList) do
+    searchForCard(v.cardName, v.packName, v.cardCount, v.cardType)
+  end
+  for k,v in pairs(CARD_LISTS.sideboardCardList) do
     searchForCard(v.cardName, v.packName, v.cardCount, v.cardType)
   end
 end
 
 function searchForCard(cardName, packName, cardCount, type)
-  local bag = CACHE.bag[packName]
+  local bag = CACHE.bag[packName].clone({})
   local allCards = bag.getObjects()
 
   for k,v in pairs(allCards) do
@@ -455,7 +350,7 @@ function searchForCard(cardName, packName, cardCount, type)
           smooth = false,
           params = { cardName, cardCount, type, bag, v.guid }
         })
-        print('Added '.. cardCount .. ' of ' .. cardName .. ' to ' .. type .. ' from ' .. packName)
+        log('Added '.. cardCount .. ' of ' .. cardName .. ' to ' .. type .. ' from ' .. packName)
         return
     end
   end
@@ -463,16 +358,17 @@ function searchForCard(cardName, packName, cardCount, type)
 end
 
 function cardTaken(card, params)
-  -- Check destination deck (permanent?) 280045
     local destPos
     local rotation = self.getRotation()
     if params[3] == "hero" then
-        destPos = heroPos
-    elseif params[3] == "slot" then
-        destPos = deckPos
+        destPos = DECK_BUILDER_STATE.heroPos
+    elseif params[3] == "deck" then
+        destPos = DECK_BUILDER_STATE.deckPos
         rotation = rotation + Vector(0, 0, 180) -- Flip player cards facedown
-    else
-        destPos = sideboardPos
+    elseif params[3] == "sideboard" then
+        destPos = DECK_BUILDER_STATE.sideboardPos
+    elseif params[3] == "contract" then
+        destPos = DECK_BUILDER_STATE.contractPos
     end
 
     for i=1, params[2] do
@@ -481,87 +377,48 @@ function cardTaken(card, params)
         card.clone(cloneParams).setRotation(rotation)
     end
     params[4].putObject(card)
-
-    --if (card.getName() == params[1]) then
-    --    for i=1, params[2] do
-    --        local cloneParams = {}
-    --        cloneParams.position=destPos
-    --        card.clone(cloneParams).setRotation(rotation)
-    --    end
-    --params[4].putObject(card)
-    --else
-    --    print('Wrong card: ' .. card.getName())
-    --    params[4].putObject(card)
-    --end
 end
 
-function makeText()
-  -- Create textbox
+-- Function to convert utf-16 hex to actual character since JSON.decode doesn't seem to handle utf-16 hex very well..
+function convertHexToDec(a)
+  return string.char(tonumber(a,16))
+end
+
+--######################################################################################################
+--# Input Textbox Functionality
+--######################################################################################################
+function createInputBox()
+  -- Create input textbox
   local input_parameters = {}
   input_parameters.input_function = "inputTyped"
   input_parameters.function_owner = self
-  input_parameters.position = {15,0.5,0}
-  input_parameters.width = 2200
-  input_parameters.scale = {3,3,3}
+  input_parameters.position = {15,0.5,-12.5}
+  input_parameters.width = 2000
+  input_parameters.scale = {2.5,2.5,2.5}
   input_parameters.height = 500
   input_parameters.font_size = 450
-  input_parameters.tooltip = "*****PLEASE USE AN UNPUBLISHED DECK IF JUST FOR TTS TO AVOID FLOODING ARKHAMDB PUBLISHED DECK LISTS!*****\nInput deck ID from ArkhamDB URL of the deck\nExample: For the URL 'https://arkhamdb.com/decklist/view/101/knowledge-overwhelming-solo-deck-1.0', you should input '101'"
+  input_parameters.tooltip = "**Please use an unpublished deck if just for TTS - make sure to have your account set to share decks.\nInput deck ID from RingsDB URL of the deck\nExample: For the URL 'https://ringsdb.com/decklist/view/7154/tactical-questing-1.0', you should input 7154"
   input_parameters.alignment = 3 -- (1 = Automatic, 2 = Left, 3 = Center, 4 = Right, 5 = Justified) –Optional
-  input_parameters.value="280045"
-  input_parameters.label = "INPUT HERE"
-  input_parameters.color = {0.9,0.7,0.5}
+  input_parameters.value=""
+  input_parameters.label = "Deck ID"
+  input_parameters.color = {1,1,1}
   input_parameters.validation = 2
   self.createInput(input_parameters)
 end
 
 function inputTyped(objectInputTyped, playerColorTyped, input_value, selected)
-    deckID = input_value
+    DECK_BUILDER_STATE.deckId = input_value
 end
 
-function makeButton()
-  -- Create Button
-  local button_parameters = {}
-  button_parameters.click_function = "buttonClicked"
-  button_parameters.function_owner = self
-  button_parameters.position = {15,0.5,-2}
-  button_parameters.width = 900
-  button_parameters.height = 270
-  button_parameters.tooltip = "Click to build your deck!"
-  button_parameters.label = "Build"
-  button_parameters.scale = {3,3,3}
-  self.createButton(button_parameters)
-end
-
-function buttonClicked()
-  -- Reset
-  init()
-
-  get_deck()
-end
-
---function onLoad()
---    self.createButton({
---        click_function = 'buildDeck',
---        function_owner = self,
---        label = 'Build Deck',
---        position = { 0, 0.6, 0 },
---        rotation = { 0, 0, 0 },
---        color = { 1, 1, 1},
---        font_color = { 0, 0, 0 },
---        width = 1000,
---        height = 350,
---        font_size = 200,
---        scale = { 3.8, 3.8, 3.8 }
---    })
---end
-
-function makeCheckboxPP()
+--######################################################################################################
+--# Public/Private Button Functionality
+--######################################################################################################
+function createPublicPrivateButton()
   -- Create Private/Published checkbox
   local checkbox_parameters = {}
-  checkbox_parameters.click_function = "checkboxPPClicked"
+  checkbox_parameters.click_function = "publicPrivateButtonClicked"
   checkbox_parameters.function_owner = self
-  --checkbox_parameters.position = {-0.33,0.1,-0.255}
-  checkbox_parameters.position = {15,0.6,-5}
+  checkbox_parameters.position = {12,0.6,-15}
   checkbox_parameters.width = 900
   checkbox_parameters.height = 275
   checkbox_parameters.tooltip = "Click to toggle Private/Published deck ID"
@@ -573,7 +430,7 @@ function makeCheckboxPP()
   self.createButton(checkbox_parameters)
 end
 
-function checkboxPPClicked()
+function publicPrivateButtonClicked()
   buttons = self.getButtons()
   for k,v in pairs(buttons) do
     if (v.label == "Private") then
@@ -581,20 +438,15 @@ function checkboxPPClicked()
       button_parameters.label = "Published"
       button_parameters.index = v.index
       self.editButton(button_parameters)
-      privateDeck = false
+      DECK_BUILDER_STATE.isPrivateDeck = false
     else
       if (v.label == "Published") then
         local button_parameters = {}
         button_parameters.label = "Private"
         button_parameters.index = v.index
         self.editButton(button_parameters)
-        privateDeck = true
+        DECK_BUILDER_STATE.isPrivateDeck = true
       end
     end
   end
-end
-
--- Function to convert utf-16 hex to actual character since JSON.decode doesn't seem to handle utf-16 hex very well..
-function convertHexToDec(a)
-  return string.char(tonumber(a,16))
 end
