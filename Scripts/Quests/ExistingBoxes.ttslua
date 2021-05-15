@@ -1,0 +1,6 @@
+function onObjectLeaveContainer(container, obj)
+    if container == self then
+        local objClone = obj.clone({position = self.getPosition()})
+        self.putObject(objClone)
+    end
+end
