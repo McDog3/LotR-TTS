@@ -13,6 +13,3 @@ Rather than checking a copy of *each* object with a script, I instead have gener
 * Temple of the Deceived - MAP MAKER!!!!!
 * Crossings of Poros - Helper to always draw a card from random encounter sets
 * Lonely Mountain - shuffle up treasures
-
-
-##
