@@ -7,6 +7,9 @@
 -- Description and usage in README.md in this lib folder in repository
 -- ~~~~~~
 
+SHADOW_CARD_PILE = '417a35'
+SECONDARY_SHADOW_CARD_PILE = '8c1795'
+
 -- Testing flags
 flags = {
   -- setTestingDeckIds = true,
@@ -562,7 +565,7 @@ function spawnShadow(playerColor, direction, lastPressIndex)
         local num = prams.n
         local pos = prams.p
         pos.y = 4
-        for _, d in pairs(getObjectFromGUID('01e7cf').getObjects()) do
+        for _, d in pairs(getObjectFromGUID(SHADOW_CARD_PILE).getObjects()) do
             if d.tag == 'Deck' then
                 if #d.getObjects() < num then num = #d.getObjects() end
                 local p = {position=pos, rotation={0,180,180}}
@@ -593,7 +596,7 @@ function spawn2ndShadow(playerColor, direction, lastPressIndex)
         local num = prams.n
         local pos = prams.p
         pos.y = 4
-        for _, d in pairs(getObjectFromGUID('acc690').getObjects()) do
+        for _, d in pairs(getObjectFromGUID(SECONDARY_SHADOW_CARD_PILE).getObjects()) do
             if d.tag == 'Deck' then
                 if #d.getObjects() < num then num = #d.getObjects() end
                 local p = {position=pos, rotation={0,180,180}}
