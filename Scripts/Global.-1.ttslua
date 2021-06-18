@@ -22,6 +22,46 @@ flags = {
   }
 }
 
+PLAYTEST_DATA = {
+    packs = {
+        pack1 = {
+            name = "The Aldburg Plot",
+            description = "(AP 1)",
+            links = {}
+        },
+        pack2 = {
+            name = "Fire on the Eastemnet",
+            description = "(AP 2)",
+            links = {}
+        },
+        pack3 = {
+            name = "The Gap of Rohan",
+            description = "(AP 3)",
+            links = {}
+        },
+        pack4 = {
+            name = "The Glittering Caves",
+            description = "(AP 4)",
+            links = {}
+        },
+        pack5 = {
+            name = "Mustering of the Rohirrim",
+            description = "(AP 5)",
+            links = {}
+        },
+        pack6 = {
+            name = "Blood in the Isen",
+            description = "(AP 6)",
+            links = {}
+        },
+        pack7 = {
+            name = "Scouring of the Shire",
+            description = "(GenCon 2021)",
+            links = {}
+        }
+    }
+}
+
 if not package.loaded['Hotkey'] then
     Hotkey = {}
     package.loaded['Hotkey'] = Hotkey
@@ -221,7 +261,7 @@ function makePlayerPanel()
     attributes={
       id="playerPanel",
       width = "30%",
-      height = "40%",
+      height = "15%",
       active = flags.ui.player or false
     },
     children={}
@@ -304,7 +344,8 @@ function playerSubmitRow()
 end
 
 function playerSubmitClicked()
-    log("Spawning deck for "..PLAYER_COLOR)
+    log("Spawning deck "..PLAYER_BOX.." for "..PLAYER_COLOR)
+    findPlaytestPack(PLAYER_BOX)
     local playerRotation = Player[PLAYER_COLOR].getPointerRotation()
     local playerPosition = Player[PLAYER_COLOR].getPointerPosition()
 
@@ -317,13 +358,15 @@ function playerSubmitClicked()
     })
     --front player http://cloud-3.steamusercontent.com/ugc/1022822435114075729/621125C5E86CB891467D4DB25B634A3FEE23D5F0/
     --back player http://cloud-3.steamusercontent.com/ugc/1056604474217944291/DFA22834DEED7ED2CC86A9EA046DE4F7ABCFE9D1/
+    local test1 = "https://drive.google.com/uc?export=view&id=1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq" --https://drive.google.com/file/d/1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq/view?usp=sharing
+    local test2 = "https://drive.google.com/uc?export=view&id=1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv" --https://drive.google.com/file/d/1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv/view?usp=sharing
     deckObject.setCustomObject({
-        face = "http://cloud-3.steamusercontent.com/ugc/1022822435114075729/621125C5E86CB891467D4DB25B634A3FEE23D5F0/",
-        back = "http://cloud-3.steamusercontent.com/ugc/1056604474217944291/DFA22834DEED7ED2CC86A9EA046DE4F7ABCFE9D1/",
-        unique_back = false,--will need this to be true for encounters
-        width = 7,
-        height = 5,
-        number = 34,
+        face = test1,
+        back = test2,
+        unique_back = true,--will need this to be true for encounters
+        width = 10,
+        height = 2,
+        number = 11,
         back_is_hidden = true
     })
 
@@ -339,7 +382,7 @@ function makeEncounterPanel()
     attributes={
       id="encounterPanel"
       , width = "30%"
-      , height = "40%"
+      , height = "15%"
       , active =  flags.ui.encounter or false
     },
     children={}
@@ -422,6 +465,7 @@ end
 
 function encounterSubmitClicked()
     log("Spawning quest "..QUEST_SELECTED.." for "..PLAYER_COLOR)
+    findPlaytestPack(QUEST_SELECTED)
     local playerRotation = Player[PLAYER_COLOR].getPointerRotation()
     local playerPosition = Player[PLAYER_COLOR].getPointerPosition()
 
@@ -432,14 +476,16 @@ function encounterSubmitClicked()
         sound = false,
         scale = {2, 2, 2}
     })
-    --front encounter http://cloud-3.steamusercontent.com/ugc/1022822649627620032/CC99D612ECDC79AB50338BB433C05E5AC5D9F4AA/
-    --back encounter http://cloud-3.steamusercontent.com/ugc/1022822649627620539/BDFD15346D7D476D6F6BD8421F58907347B003BF/
+
+    local test1 = "https://drive.google.com/uc?export=view&id=1ihEHcxMMefFguOIaW5IzKHfXT6bbQToZ"
+    local test2 = "https://drive.google.com/uc?export=view&id=1CqJsUOg_Jxqj5OgrEbxuMlj0pP3A1UA0"
+
     deckObject.setCustomObject({
-        face = "http://cloud-3.steamusercontent.com/ugc/1022822649627620032/CC99D612ECDC79AB50338BB433C05E5AC5D9F4AA/",
-        back = "http://cloud-3.steamusercontent.com/ugc/1022822649627620539/BDFD15346D7D476D6F6BD8421F58907347B003BF/",
+        face = test1,
+        back = test2,
         unique_back = true,
-        width = 7,
-        height = 5,
+        width = 10,
+        height = 1,
         number = 9,
         sideways = true, --TODO needed for quest cards ONLY
         back_is_hidden = true
@@ -460,13 +506,21 @@ function generateOptions(setter)
   local first = true
   local options = {}
   --local bagContents = getBagContents(bagGUID)
-  table.insert(options, option("The Aldburg Plot"))
-  table.insert(options, option("Fire on the Eastemnet"))
-  table.insert(options, option("The Gap of Rohan"))
-  table.insert(options, option("The Glittering Caves"))
-  table.insert(options, option("Mustering of the Rohirrim"))
-  table.insert(options, option("Blood in the Isen"))
-  setter("", "The Aldburg Plot")
+  for index, pack in pairs(PLAYTEST_DATA.packs) do
+      log(pack.name)
+      local title = pack.name.."-"..pack.description
+      table.insert(options, option(title))
+      if index == 1 then
+          setter("", title)
+      end
+  end
+  --table.insert(options, option("The Aldburg Plot"))
+  --table.insert(options, option("Fire on the Eastemnet"))
+  --table.insert(options, option("The Gap of Rohan"))
+  --table.insert(options, option("The Glittering Caves"))
+  --table.insert(options, option("Mustering of the Rohirrim"))
+  --table.insert(options, option("Blood in the Isen"))
+  --setter("", "The Aldburg Plot")
 
   return options
 end
@@ -552,6 +606,17 @@ function toggleUI()
   UI.hide("playerPanel")
   UI.hide("encounterPanel")
   toggleHidden("alepUILayout")
+end
+
+
+function findPlaytestPack(packName)
+    for _, pack in pairs(PLAYTEST_DATA.packs) do
+        local title = pack.name.."-"..pack.description
+        if title == packName then
+            log("Found PACK!"..pack.name)
+            return
+        end
+    end
 end
 
 
