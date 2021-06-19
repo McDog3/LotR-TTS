@@ -10,6 +10,7 @@
 SHADOW_CARD_PILE = '417a35'
 SECONDARY_SHADOW_CARD_PILE = '8c1795'
 
+PLAYTEST_BUILDER = '15426a'
 -- Testing flags
 flags = {
   -- setTestingDeckIds = true,
@@ -179,8 +180,8 @@ function onLoad()
         Hotkey.Bind({1}, spawnShadow, 'up')
         Hotkey.Bind({2}, spawn2ndShadow, 'up')
     MegaFreeze()
-    makeUI()
-    addContextMenuItem("Load ALeP Deck", loadALePContent, false, true)
+    -- makeUI()
+    -- addContextMenuItem("Load ALeP Deck", loadALePContent, false, true)
 end
 
 ----NEW STUFF
@@ -344,31 +345,33 @@ function playerSubmitRow()
 end
 
 function playerSubmitClicked()
-    log("Spawning deck "..PLAYER_BOX.." for "..PLAYER_COLOR)
-    findPlaytestPack(PLAYER_BOX)
-    local playerRotation = Player[PLAYER_COLOR].getPointerRotation()
-    local playerPosition = Player[PLAYER_COLOR].getPointerPosition()
-
-    local deckObject = spawnObject({
-        type = "DeckCustom",
-        position = playerPosition,
-        rotation = {0, playerRotation, 0},
-        sound = false,
-        scale = {2, 2, 2}
-    })
-    --front player http://cloud-3.steamusercontent.com/ugc/1022822435114075729/621125C5E86CB891467D4DB25B634A3FEE23D5F0/
-    --back player http://cloud-3.steamusercontent.com/ugc/1056604474217944291/DFA22834DEED7ED2CC86A9EA046DE4F7ABCFE9D1/
-    local test1 = "https://drive.google.com/uc?export=view&id=1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq" --https://drive.google.com/file/d/1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq/view?usp=sharing
-    local test2 = "https://drive.google.com/uc?export=view&id=1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv" --https://drive.google.com/file/d/1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv/view?usp=sharing
-    deckObject.setCustomObject({
-        face = test1,
-        back = test2,
-        unique_back = true,--will need this to be true for encounters
-        width = 10,
-        height = 2,
-        number = 11,
-        back_is_hidden = true
-    })
+    log("Spawning deck clicked in global"..PLAYER_BOX)
+    getObjectFromGUID(PLAYTEST_BUILDER).call("playerSubmitClickedRedux", {playerBox = PLAYER_BOX})
+    -- --log(foo)
+    -- findPlaytestPack(PLAYER_BOX)
+    -- --local playerRotation = Player[PLAYER_COLOR].getPointerRotation()
+    -- --local playerPosition = Player[PLAYER_COLOR].getPointerPosition()
+    --
+    -- local deckObject = spawnObject({
+    --     type = "DeckCustom",
+    --     position = playerPosition,
+    --     rotation = {0, 0, 0},
+    --     sound = false,
+    --     scale = {2, 2, 2}
+    -- })
+    -- --front player http://cloud-3.steamusercontent.com/ugc/1022822435114075729/621125C5E86CB891467D4DB25B634A3FEE23D5F0/
+    -- --back player http://cloud-3.steamusercontent.com/ugc/1056604474217944291/DFA22834DEED7ED2CC86A9EA046DE4F7ABCFE9D1/
+    -- local test1 = "https://drive.google.com/uc?export=view&id=1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq" --https://drive.google.com/file/d/1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq/view?usp=sharing
+    -- local test2 = "https://drive.google.com/uc?export=view&id=1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv" --https://drive.google.com/file/d/1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv/view?usp=sharing
+    -- deckObject.setCustomObject({
+    --     face = test1,
+    --     back = test2,
+    --     unique_back = true,--will need this to be true for encounters
+    --     width = 10,
+    --     height = 2,
+    --     number = 11,
+    --     back_is_hidden = true
+    -- })
 
     toggleUI()
 end
@@ -590,9 +593,8 @@ end
 
 function toggleHidden(uiElement)
     log(uiElement)
-  local active = UI.getAttribute(uiElement, "active")
-
-  log(UI.getAttribute(uiElement, "id") .. " changed to " .. active)
+    local active = UI.getAttribute(uiElement, "active")
+    log(UI.getAttribute(uiElement, "id") .. " changed to " .. active)
 
   -- Despite using boolean values, the attribute is a string so I have to use string matching.
   if active == "true" then

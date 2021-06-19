@@ -1,0 +1,168 @@
+-- Local Positions
+BUTTON_POSITION = {-6.75,0.6,7.75}
+-- Global Positions
+QUEST_DECK_1_POSITION = {-87,4,112} --TODO: make quest deck 1 a larger spot than the rest for quest cards
+QUEST_DECK_2_POSITION = {-87,4,105}
+QUEST_DECK_3_POSITION = {-82,4,112}
+QUEST_DECK_4_POSITION = {-82,4,105}
+PLAYER_DECK_1_POSITION = {-87,4,112}
+PLAYER_DECK_2_POSITION = {-87,4,105}
+
+PLAYTEST_DATA = {
+    packs = {
+        pack1 = {
+            name = "The Aldburg Plot",
+            description = "(AP 1)",
+            links = {}
+        },
+        pack2 = {
+            name = "Fire on the Eastemnet",
+            description = "(AP 2)",
+            links = {}
+        },
+        pack3 = {
+            name = "The Gap of Rohan",
+            description = "(AP 3)",
+            links = {}
+        },
+        pack4 = {
+            name = "The Glittering Caves",
+            description = "(AP 4)",
+            links = {}
+        },
+        pack5 = {
+            name = "Mustering of the Rohirrim",
+            description = "(AP 5)",
+            links = {}
+        },
+        pack6 = {
+            name = "Blood in the Isen",
+            description = "(AP 6)",
+            links = {}
+        },
+        pack7 = {
+            name = "Scouring of the Shire",
+            description = "(GenCon 2021)",
+            links = {}
+        }
+    }
+}
+
+function onLoad()
+    log("PlaytestBuilder Loading...")
+    Global.call("makeUI")
+    createBuildDeckButton()
+    log("PlaytestBuilder Loaded Successfully!")
+end
+
+
+function createBuildDeckButton()
+  local button_parameters = {}
+  button_parameters.click_function = "buildPlaytestButtonClicked"
+  button_parameters.function_owner = self
+  button_parameters.position = BUTTON_POSITION
+  button_parameters.font_size = 150
+  button_parameters.width = 1400
+  button_parameters.height = 300
+  button_parameters.tooltip = "Click to generate ALeP playtest cards!"
+  button_parameters.label = "Generate ALeP Deck"
+  button_parameters.scale = {1,1.5,1.5}
+  self.createButton(button_parameters)
+end
+
+function buildPlaytestButtonClicked()
+  log("Clicked button...")
+  Global.call("toggleUI")
+end
+
+function playerSubmitClickedRedux(params)
+    log("Spawning deck in DeckBuilder"..params.playerBox)
+    local playerPosition = PLAYER_DECK_1_POSITION
+    local playerPosition2 = PLAYER_DECK_2_POSITION
+    --log(foo)
+    local blah = findPlaytestPackRedux(playerBox)
+    --local playerRotation = Player[PLAYER_COLOR].getPointerRotation()
+    --local playerPosition = Player[PLAYER_COLOR].getPointerPosition()
+
+    local deckObject = spawnObject({
+        type = "DeckCustom",
+        position = playerPosition,
+        rotation = {0, 180, 0},
+        sound = false,
+        scale = {2, 2, 2}
+    })
+    --front player http://cloud-3.steamusercontent.com/ugc/1022822435114075729/621125C5E86CB891467D4DB25B634A3FEE23D5F0/
+    --back player http://cloud-3.steamusercontent.com/ugc/1056604474217944291/DFA22834DEED7ED2CC86A9EA046DE4F7ABCFE9D1/
+    local test1 = "https://drive.google.com/uc?export=view&id=1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq" --https://drive.google.com/file/d/1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq/view?usp=sharing
+    local test2 = "https://drive.google.com/uc?export=view&id=1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv" --https://drive.google.com/file/d/1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv/view?usp=sharing
+    deckObject.setCustomObject({
+        face = test1,
+        back = test2,
+        unique_back = true,--will need this to be true for encounters
+        width = 10,
+        height = 2,
+        number = 11,
+        back_is_hidden = true
+    })
+
+    local deckObject2 = spawnObject({
+        type = "DeckCustom",
+        position = playerPosition2,
+        rotation = {0, 180, 0},
+        sound = false,
+        scale = {2, 2, 2}
+    })
+    deckObject2.setCustomObject({
+        face = test1,
+        back = test2,
+        unique_back = true,--will need this to be true for encounters
+        width = 10,
+        height = 2,
+        number = 11,
+        back_is_hidden = true
+    })
+
+    local deckObject3 = spawnObject({
+        type = "DeckCustom",
+        position = QUEST_DECK_3_POSITION,
+        rotation = {0, 180, 0},
+        sound = false,
+        scale = {2, 2, 2}
+    })
+    deckObject3.setCustomObject({
+        face = test1,
+        back = test2,
+        unique_back = true,--will need this to be true for encounters
+        width = 10,
+        height = 2,
+        number = 11,
+        back_is_hidden = true
+    })
+
+    local deckObject4 = spawnObject({
+        type = "DeckCustom",
+        position = QUEST_DECK_4_POSITION,
+        rotation = {0, 180, 0},
+        sound = false,
+        scale = {2, 2, 2}
+    })
+    deckObject4.setCustomObject({
+        face = test1,
+        back = test2,
+        unique_back = true,--will need this to be true for encounters
+        width = 10,
+        height = 2,
+        number = 11,
+        back_is_hidden = true
+    })
+end
+
+function findPlaytestPackRedux(packName)
+    for _, pack in pairs(PLAYTEST_DATA.packs) do
+        local title = pack.name.."-"..pack.description
+        if title == packName then
+            log("Found PACK!"..pack.name)
+            return
+        end
+    end
+end
