@@ -1,4 +1,3 @@
-
 -- ~~~~~~
 -- Script by dzikakulka
 -- Issues, history at: http://github.com/tjakubo2/TTS_lib
@@ -23,45 +22,13 @@ flags = {
   }
 }
 
-PLAYTEST_DATA = {
-    packs = {
-        pack1 = {
-            name = "The Aldburg Plot",
-            description = "(AP 1)",
-            links = {}
-        },
-        pack2 = {
-            name = "Fire on the Eastemnet",
-            description = "(AP 2)",
-            links = {}
-        },
-        pack3 = {
-            name = "The Gap of Rohan",
-            description = "(AP 3)",
-            links = {}
-        },
-        pack4 = {
-            name = "The Glittering Caves",
-            description = "(AP 4)",
-            links = {}
-        },
-        pack5 = {
-            name = "Mustering of the Rohirrim",
-            description = "(AP 5)",
-            links = {}
-        },
-        pack6 = {
-            name = "Blood in the Isen",
-            description = "(AP 6)",
-            links = {}
-        },
-        pack7 = {
-            name = "Scouring of the Shire",
-            description = "(GenCon 2021)",
-            links = {}
-        }
-    }
-}
+function onLoad()
+    count = 0
+    spawnTest = true
+        Hotkey.Bind({1}, spawnShadow, 'up')
+        Hotkey.Bind({2}, spawn2ndShadow, 'up')
+    MegaFreeze()
+end
 
 if not package.loaded['Hotkey'] then
     Hotkey = {}
@@ -174,459 +141,6 @@ if not package.loaded['Hotkey'] then
     end
 end
 
-function onLoad()
-    count = 0
-    spawnTest = true
-        Hotkey.Bind({1}, spawnShadow, 'up')
-        Hotkey.Bind({2}, spawn2ndShadow, 'up')
-    MegaFreeze()
-    -- makeUI()
-    -- addContextMenuItem("Load ALeP Deck", loadALePContent, false, true)
-end
-
-----NEW STUFF
-function loadALePContent(playerColor, menuPosition)
-    PLAYER_COLOR = playerColor
-    PLAYER_POSITION = menuPosition
-    toggleUI()
-end
----TESTING ABOVE
-
-function makeUI()
-  log("Building ALeP UI")
-
-  local alepUI = {}
-
-  local sidebarLayout = {
-    tag="VerticalLayout",
-    attributes={
-      id="alepUILayout",
-      rectAlignment="MiddleRight",
-      height=100,
-      width=100,
-      color="rgba(0,0,0,0.7)",
-      active=flags.ui.main or false
-    },
-    children={}
-  }
-
-  local playerButton = {
-    tag="Button",
-    attributes={
-      onClick="playerPanelClicked",
-      tooltip="Click to spawn ALeP player cards for deckbuilding/playtesting",
-      fontSize=12,
-    },
-    value="Player Deck Builder",
-  }
-
-  local encounterButton = {
-    tag="Button",
-    attributes={
-      onClick="encounterPanelClicked",
-      tooltip="Click to spawn an ALeP quest for playtesting",
-      fontSize=12,
-    },
-    value="Encounter Builder",
-  }
-
-  local closeButton = {
-    tag="Button",
-    attributes={
-      onClick="toggleUI",
-      tooltip="Click to close ALeP Deck Builder Menu",
-      fontSize=12
-    },
-    value="Close Menu",
-  }
-
-  table.insert(sidebarLayout.children, playerButton)
-  table.insert(sidebarLayout.children, encounterButton)
-  table.insert(sidebarLayout.children, closeButton)
-
-  table.insert(alepUI, sidebarLayout)
-  table.insert(alepUI, makePlayerPanel())
-  table.insert(alepUI, makeEncounterPanel())
-
-  -- Does this remove any other mods custom UI's?
-  -- The api docs aren't super clear and I don't see a way to get the current UI and append
-  -- It doesn't seem like it
-  UI.setXmlTable(alepUI)
-end
-
-function makePlayerPanel()
-  log("Building Player Panel")
-
-  local panel = {
-    tag="Panel",
-    attributes={
-      id="playerPanel",
-      width = "30%",
-      height = "15%",
-      active = flags.ui.player or false
-    },
-    children={}
-  }
-
-  local panelLayout = {
-    tag="TableLayout",
-    attributes={
-      color="black",
-    },
-    children={}
-  }
-
-  table.insert(panelLayout.children, playerHeaderRow())
-  table.insert(panelLayout.children, playerBoxRow())
-  table.insert(panelLayout.children, playerSubmitRow())
-  table.insert(panel.children, panelLayout)
-
-  return panel
-end
-
--- Player Panel Assets
-function playerHeaderRow()
-  local header = {
-    tag="Text",
-    value="ALeP Player Card Spawner",
-    attributes={
-      resizeTextForBestFit=true,
-      color="blue"
-    }
-  }
-
-  return row({
-    cell(header,2)
-  })
-end
-
-function playerBoxRow()
-  local label = {
-    tag="Text",
-    value="Deluxe/AP",
-    attributes={
-      resizeTextForBestFit=true
-      , color="Blue"
-    }
-  }
-
-  local dropdown = {
-    tag="Dropdown",
-    attributes={
-        onValueChanged="setPlayerBox"
-    },
-    children=generateOptions(setPlayerBox)
-  }
-
-  return row({
-    cell(label),
-    cell(dropdown)
-  })
-end
-
-function setPlayerBox(player, option, id)
-    log("Player box changed to: "..option)
-  PLAYER_BOX = option
-end
-
-function playerSubmitRow()
-  local button = {
-    tag="Button",
-    attributes={
-      onClick="playerSubmitClicked", --TODO: build deck based on the parameters given
-      fontSize=18
-    },
-    value="Spawn Cards",
-  }
-
-  return row({
-    cell(button, 2)
-  })
-end
-
-function playerSubmitClicked()
-    log("Spawning deck clicked in global"..PLAYER_BOX)
-    getObjectFromGUID(PLAYTEST_BUILDER).call("playerSubmitClickedRedux", {playerBox = PLAYER_BOX})
-    -- --log(foo)
-    -- findPlaytestPack(PLAYER_BOX)
-    -- --local playerRotation = Player[PLAYER_COLOR].getPointerRotation()
-    -- --local playerPosition = Player[PLAYER_COLOR].getPointerPosition()
-    --
-    -- local deckObject = spawnObject({
-    --     type = "DeckCustom",
-    --     position = playerPosition,
-    --     rotation = {0, 0, 0},
-    --     sound = false,
-    --     scale = {2, 2, 2}
-    -- })
-    -- --front player http://cloud-3.steamusercontent.com/ugc/1022822435114075729/621125C5E86CB891467D4DB25B634A3FEE23D5F0/
-    -- --back player http://cloud-3.steamusercontent.com/ugc/1056604474217944291/DFA22834DEED7ED2CC86A9EA046DE4F7ABCFE9D1/
-    -- local test1 = "https://drive.google.com/uc?export=view&id=1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq" --https://drive.google.com/file/d/1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq/view?usp=sharing
-    -- local test2 = "https://drive.google.com/uc?export=view&id=1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv" --https://drive.google.com/file/d/1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv/view?usp=sharing
-    -- deckObject.setCustomObject({
-    --     face = test1,
-    --     back = test2,
-    --     unique_back = true,--will need this to be true for encounters
-    --     width = 10,
-    --     height = 2,
-    --     number = 11,
-    --     back_is_hidden = true
-    -- })
-
-    toggleUI()
-end
-
---encounter
-function makeEncounterPanel()
-  log("Building Encounter Panel")
-
-  local panel = {
-    tag="Panel",
-    attributes={
-      id="encounterPanel"
-      , width = "30%"
-      , height = "15%"
-      , active =  flags.ui.encounter or false
-    },
-    children={}
-  }
-
-  local panelLayout = {
-    tag="TableLayout",
-    attributes={
-      color="black",
-    },
-    children={}
-  }
-
-  table.insert(panelLayout.children, encounterHeaderRow())
-  table.insert(panelLayout.children, encounterPanelQuestRow())
-  table.insert(panelLayout.children, encounterSubmitRow())
-  table.insert(panel.children, panelLayout)
-
-  return panel
-end
-
-function encounterHeaderRow()
-  local header = {
-    tag="Text",
-    value="Encounter Builder",
-    attributes={
-      resizeTextForBestFit=true,
-      color="Red"
-    }
-  }
-
-  return row({
-    cell(header,2)
-  })
-end
-
-function encounterPanelQuestRow()
-  local label = {
-    tag="Text",
-    value="Quest",
-    attributes={
-      resizeTextForBestFit=true,
-      color="Red"
-    }
-  }
-
-  local dropdown = {
-    tag="Dropdown",
-    attributes={
-        onValueChanged="setQuest"
-    },
-    children=generateOptions(setQuest)
-  }
-
-  return row({
-    cell(label)
-    , cell(dropdown)
-  })
-end
-
-function setQuest(player, option, id)
-    log("Quest changed to: "..option)
-    QUEST_SELECTED = option
-end
-
-function encounterSubmitRow()
-  local button = {
-    tag="Button",
-    attributes={
-      onClick="encounterSubmitClicked",
-      fontSize=18,
-    },
-    value="Build Encounter Deck",
-  }
-
-  return row({
-    cell(button, 2)
-  })
-end
-
-function encounterSubmitClicked()
-    log("Spawning quest "..QUEST_SELECTED.." for "..PLAYER_COLOR)
-    findPlaytestPack(QUEST_SELECTED)
-    local playerRotation = Player[PLAYER_COLOR].getPointerRotation()
-    local playerPosition = Player[PLAYER_COLOR].getPointerPosition()
-
-    local deckObject = spawnObject({
-        type = "DeckCustom",
-        position = playerPosition,
-        rotation = {0, playerRotation, 0},
-        sound = false,
-        scale = {2, 2, 2}
-    })
-
-    local test1 = "https://drive.google.com/uc?export=view&id=1ihEHcxMMefFguOIaW5IzKHfXT6bbQToZ"
-    local test2 = "https://drive.google.com/uc?export=view&id=1CqJsUOg_Jxqj5OgrEbxuMlj0pP3A1UA0"
-
-    deckObject.setCustomObject({
-        face = test1,
-        back = test2,
-        unique_back = true,
-        width = 10,
-        height = 1,
-        number = 9,
-        sideways = true, --TODO needed for quest cards ONLY
-        back_is_hidden = true
-    })
-
-    toggleUI()
-end
-
-
-
-
-
---Generic Helpers
-
-
-function generateOptions(setter)
-  --log("Getting options from bag " .. getBagName(bagGUID))
-  local first = true
-  local options = {}
-  --local bagContents = getBagContents(bagGUID)
-  for index, pack in pairs(PLAYTEST_DATA.packs) do
-      log(pack.name)
-      local title = pack.name.."-"..pack.description
-      table.insert(options, option(title))
-      if index == 1 then
-          setter("", title)
-      end
-  end
-  --table.insert(options, option("The Aldburg Plot"))
-  --table.insert(options, option("Fire on the Eastemnet"))
-  --table.insert(options, option("The Gap of Rohan"))
-  --table.insert(options, option("The Glittering Caves"))
-  --table.insert(options, option("Mustering of the Rohirrim"))
-  --table.insert(options, option("Blood in the Isen"))
-  --setter("", "The Aldburg Plot")
-
-  return options
-end
-
-function option(value)
-  return {
-      tag="Option",
-      value=value
-  }
-end
-
-function row(cells)
-  return {
-    tag="Row",
-    attributes={},
-    children=cells
-  }
-end
-
-function cell(contents, colSpan)
-  colSpan = colSpan or 1
-
-  return {
-    tag="Cell",
-    attributes={
-        columnSpan=colSpan
-    },
-    children=contents
-  }
-end
-
-function option(value)
-  return {
-    tag="Option",
-    value=value
-  }
-end
-
-function toggle(value, onValueChanged, isOn, textColor)
-  isOn = isOn or false
-  textColor = textColor or "white"
-
-  return {
-    tag = "Toggle",
-    value = value,
-    attributes = {
-        onValueChanged = scriptContainerGUID .. "/" .. onValueChanged,
-      textColor = textColor,
-      fontSize = 16,
-      isOn = isOn
-    }
-  }
-end
-
--- UI Helper Functions
-function playerPanelClicked()
-  log("Player Panel clicked")
-  UI.hide("encounterPanel")
-  toggleHidden("playerPanel")
-end
-
-function encounterPanelClicked()
-  log("Encounter Panel clicked")
-  UI.hide("playerPanel")
-  toggleHidden("encounterPanel")
-end
-
-function toggleHidden(uiElement)
-    log(uiElement)
-    local active = UI.getAttribute(uiElement, "active")
-    log(UI.getAttribute(uiElement, "id") .. " changed to " .. active)
-
-  -- Despite using boolean values, the attribute is a string so I have to use string matching.
-  if active == "true" then
-    UI.hide(uiElement)
-  else
-    UI.show(uiElement)
-  end
-end
-
-function toggleUI()
-  UI.hide("playerPanel")
-  UI.hide("encounterPanel")
-  toggleHidden("alepUILayout")
-end
-
-
-function findPlaytestPack(packName)
-    for _, pack in pairs(PLAYTEST_DATA.packs) do
-        local title = pack.name.."-"..pack.description
-        if title == packName then
-            log("Found PACK!"..pack.name)
-            return
-        end
-    end
-end
-
-
----------------------------------------------------------------------------------
----------------------------------------------------------------------------------
----------------------------------------------------------------------------------
----------------------------------------------------------------------------------
----------------------------------------------------------------------------------
 function spawnShadow(playerColor, direction, lastPressIndex)
     function spawnShadow_afterCount(prams)
         local num = prams.n
@@ -693,12 +207,13 @@ Total = getObjectFromGUID('639e23')
 Levels = getObjectFromGUID('5a5f95')
 Bonus = getObjectFromGUID('639e23')
 
-function addUp()
+function addUp() -- TODO: Is this still used?
     Total.setValue( Levels.getValue() + Bonus.GetValue() )
 end
 
 function MegaFreeze()
     local freezeByZone = {'36c7bf'}
+    --black table, left edge, right edge, top edge, vd, aside, floor (table), secret bag under the black table, another secret bag under the black table
     local freezeByGUID = {'23a43c', 'b37a40', 'b3e425', 'e577da', '2a71e5', 'eef28d', '1d2bbf', '9ef8b0', 'ce199b'}
 
     for _, obj in pairs(getAllObjects()) do
@@ -719,4 +234,327 @@ function MegaFreeze()
             obj.interactable = false
         end
     end
+end
+
+
+--#########################################################################
+--                          ALeP UI Creation
+--#########################################################################
+
+function makeUI()
+  log("Building ALeP UI")
+  local alepUI = {}
+
+  table.insert(alepUI, makeSidebar())
+  table.insert(alepUI, makePlayerPanel())
+  table.insert(alepUI, makeEncounterPanel())
+
+  UI.setXmlTable(alepUI)
+  log("Finished ALeP UI")
+end
+
+function makeSidebar()
+    local sidebarLayout = {
+      tag="VerticalLayout",
+      attributes={
+        id="alepUILayout",
+        rectAlignment="MiddleRight",
+        height=100,
+        width=150,
+        color="rgba(0,0,0,0.7)",
+        active=flags.ui.main or false
+      },
+      children={}
+    }
+
+    local playerButton = {
+      tag="Button",
+      attributes={
+        onClick="playerPanelClicked",
+        tooltip="Click to spawn ALeP player cards for playtesting",
+        fontSize=12,
+      },
+      value="Player Cards",
+    }
+
+    local encounterButton = {
+      tag="Button",
+      attributes={
+        onClick="encounterPanelClicked",
+        tooltip="Click to spawn an ALeP quest for playtesting",
+        fontSize=12,
+      },
+      value="Quests",
+    }
+
+    local closeButton = {
+      tag="Button",
+      attributes={
+        onClick="toggleUI",
+        tooltip="Click to close ALeP Deck Builder Menu",
+        fontSize=12
+      },
+      value="Close Menu",
+    }
+
+    table.insert(sidebarLayout.children, playerButton)
+    table.insert(sidebarLayout.children, encounterButton)
+    table.insert(sidebarLayout.children, closeButton)
+
+    return sidebarLayout
+end
+
+function makePlayerPanel()
+  local panel = {
+    tag="Panel",
+    attributes={
+      id="playerPanel",
+      width = "30%",
+      height = "15%",
+      active = flags.ui.player or false
+    },
+    children={}
+  }
+
+  local panelLayout = {
+    tag="TableLayout",
+    attributes={
+      color="black",
+    },
+    children={}
+  }
+
+  table.insert(panelLayout.children, playerHeaderRow())
+  table.insert(panelLayout.children, playerBoxRow())
+  table.insert(panelLayout.children, playerSubmitRow())
+  table.insert(panel.children, panelLayout)
+
+  return panel
+end
+
+-- Player Panel Assets
+function playerHeaderRow()
+  local header = {
+    tag="Text",
+    value="ALeP Player Cards",
+    attributes={
+      resizeTextForBestFit=true,
+      color="blue"
+    }
+  }
+
+  return row({
+    cell(header,2)
+  })
+end
+
+function playerBoxRow()
+  local label = {
+    tag="Text",
+    value="Pack",
+    attributes={
+      resizeTextForBestFit=true,
+      color="Blue"
+    }
+  }
+
+  local dropdown = {
+    tag="Dropdown",
+    attributes={
+        onValueChanged="setPlayerBox"
+    },
+    children=generateOptions(setPlayerBox)
+  }
+
+  return row({
+    cell(label),
+    cell(dropdown)
+  })
+end
+
+function setPlayerBox(player, option, id)
+    PLAYER_BOX = option
+end
+
+function playerSubmitRow()
+  local button = {
+    tag="Button",
+    attributes={
+      onClick="playerSubmitClicked",
+      fontSize=18
+    },
+    value="Generate Cards",
+  }
+
+  return row({
+    cell(button, 2)
+  })
+end
+
+function playerSubmitClicked()
+    getObjectFromGUID(PLAYTEST_BUILDER).call("generateALEPPlayerCards", {playerBox = PLAYER_BOX})
+    toggleUI()
+end
+
+--encounter
+function makeEncounterPanel()
+  local panel = {
+    tag="Panel",
+    attributes={
+      id="encounterPanel"
+      , width = "30%"
+      , height = "15%"
+      , active =  flags.ui.encounter or false
+    },
+    children={}
+  }
+
+  local panelLayout = {
+    tag="TableLayout",
+    attributes={
+      color="black",
+    },
+    children={}
+  }
+
+  table.insert(panelLayout.children, encounterHeaderRow())
+  table.insert(panelLayout.children, encounterPanelQuestRow())
+  table.insert(panelLayout.children, encounterSubmitRow())
+  table.insert(panel.children, panelLayout)
+
+  return panel
+end
+
+function encounterHeaderRow()
+  local header = {
+    tag="Text",
+    value="ALeP Encounter Cards",
+    attributes={
+      resizeTextForBestFit=true,
+      color="Red"
+    }
+  }
+
+  return row({
+    cell(header,2)
+  })
+end
+
+function encounterPanelQuestRow()
+  local label = {
+    tag="Text",
+    value="Quest",
+    attributes={
+      resizeTextForBestFit=true,
+      color="Red"
+    }
+  }
+
+  local dropdown = {
+    tag="Dropdown",
+    attributes={
+        onValueChanged="setQuest"
+    },
+    children=generateOptions(setQuest)
+  }
+
+  return row({
+    cell(label)
+    , cell(dropdown)
+  })
+end
+
+function setQuest(player, option, id)
+    QUEST_SELECTED = option
+end
+
+function encounterSubmitRow()
+  local button = {
+    tag="Button",
+    attributes={
+      onClick="encounterSubmitClicked",
+      fontSize=18,
+    },
+    value="Generate Cards",
+  }
+
+  return row({
+    cell(button, 2)
+  })
+end
+
+function encounterSubmitClicked()
+    getObjectFromGUID(PLAYTEST_BUILDER).call("generateALEPEncounterCards", {playerBox = QUEST_SELECTED})
+    toggleUI()
+end
+
+--Generic UI Helpers
+
+function generateOptions(setter)
+  local first = true
+  local options = {}
+  local playtestData = getObjectFromGUID(PLAYTEST_BUILDER).getVar("PLAYTEST_DATA")
+  for index, pack in pairs(playtestData.packs) do
+      local title = pack.name.." - "..pack.description
+      table.insert(options, option(title))
+      if first then
+          setter(nil, title, nil)
+          first = false
+      end
+  end
+  return options
+end
+
+function option(value)
+  return {
+      tag="Option",
+      value=value
+  }
+end
+
+function row(cells)
+  return {
+    tag="Row",
+    attributes={},
+    children=cells
+  }
+end
+
+function cell(contents, colSpan)
+  colSpan = colSpan or 1
+
+  return {
+    tag="Cell",
+    attributes={
+        columnSpan=colSpan
+    },
+    children=contents
+  }
+end
+
+-- UI Helper Functions
+function playerPanelClicked()
+  UI.hide("encounterPanel")
+  toggleHidden("playerPanel")
+end
+
+function encounterPanelClicked()
+  UI.hide("playerPanel")
+  toggleHidden("encounterPanel")
+end
+
+function toggleHidden(uiElement)
+    local active = UI.getAttribute(uiElement, "active")
+  -- Despite using boolean values, the attribute is a string so I have to use string matching.
+  if active == "true" then
+    UI.hide(uiElement)
+  else
+    UI.show(uiElement)
+  end
+end
+
+function toggleUI()
+  UI.hide("playerPanel")
+  UI.hide("encounterPanel")
+  toggleHidden("alepUILayout")
 end

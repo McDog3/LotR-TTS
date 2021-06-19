@@ -1,19 +1,61 @@
 -- Local Positions
 BUTTON_POSITION = {-6.75,0.6,7.75}
 -- Global Positions
-QUEST_DECK_1_POSITION = {-87,4,112} --TODO: make quest deck 1 a larger spot than the rest for quest cards
+QUEST_DECK_1_POSITION = {-87,4,112}
 QUEST_DECK_2_POSITION = {-87,4,105}
 QUEST_DECK_3_POSITION = {-82,4,112}
 QUEST_DECK_4_POSITION = {-82,4,105}
 PLAYER_DECK_1_POSITION = {-87,4,112}
 PLAYER_DECK_2_POSITION = {-87,4,105}
 
+QUEST_DECK_POSITIONS = {QUEST_DECK_1_POSITION, QUEST_DECK_2_POSITION, QUEST_DECK_3_POSITION, QUEST_DECK_4_POSITION}
+
+GOOGLE_DRIVE_PREFIX = "https://drive.google.com/uc?export=view&id="
+
 PLAYTEST_DATA = {
     packs = {
         pack1 = {
             name = "The Aldburg Plot",
             description = "(AP 1)",
-            links = {}
+            links = {
+                quest_decks = 2,
+                quest_1 = {
+                    front = "1CqJsUOg_Jxqj5OgrEbxuMlj0pP3A1UA0",
+                    back = "1ihEHcxMMefFguOIaW5IzKHfXT6bbQToZ",
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 9,
+                        unique_back = true,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_2 = {
+                    front = "1GbhDfn_i-NWDVAG8HNxi9Ve8pUNIQIc6",
+                    back = "1scSK9ffNtgn9URnOWbDa-HWQ2_bYYAWW",
+                    metadata = {
+                        width = 10,
+                        height = 5,
+                        total = 46,
+                        unique_back = true,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                player = {
+                    front = "1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq",
+                    back = "1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv",
+                    metadata = {
+                        width = 10,
+                        height = 2,
+                        total = 11,
+                        unique_back = true,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                }
+            }
         },
         pack2 = {
             name = "Fire on the Eastemnet",
@@ -71,98 +113,61 @@ function createBuildDeckButton()
 end
 
 function buildPlaytestButtonClicked()
-  log("Clicked button...")
   Global.call("toggleUI")
 end
 
-function playerSubmitClickedRedux(params)
-    log("Spawning deck in DeckBuilder"..params.playerBox)
-    local playerPosition = PLAYER_DECK_1_POSITION
-    local playerPosition2 = PLAYER_DECK_2_POSITION
-    --log(foo)
-    local blah = findPlaytestPackRedux(playerBox)
-    --local playerRotation = Player[PLAYER_COLOR].getPointerRotation()
-    --local playerPosition = Player[PLAYER_COLOR].getPointerPosition()
+function generateALEPPlayerCards(params)
+    log("Spawning ALeP Player Deck"..params.playerBox)
+    local packData = findPlaytestPack(params.playerBox)
+    if packData ~= nil then
+        spawnDeck(PLAYER_DECK_1_POSITION, packData.links.player.front, packData.links.player.back, packData.links.player.metadata)
+    else
+        broadcastToAll("Unable to locate ALeP Metadata for selected pack", {0.5,0.5,0.5})
+    end
+end
 
+function generateALEPEncounterCards(params)
+    log("Spawning ALeP Encounter Deck"..params.playerBox)
+    local packData = findPlaytestPack(params.playerBox)
+
+    if packData ~= nil then
+        local numDecks = packData.links.quest_decks
+        for i=1, numDecks, 1 do
+            local deckPosition = QUEST_DECK_POSITIONS[i]
+            local questDeckData = packData.links["quest_"..i]
+            spawnDeck(deckPosition, questDeckData.front, questDeckData.back, questDeckData.metadata)
+        end
+    else
+        broadcastToAll("Unable to locate ALeP Metadata for selected pack", {0.5,0.5,0.5})
+    end
+end
+
+function spawnDeck(deckPosition, cardFrontsId, cardBacksId, metadata)
     local deckObject = spawnObject({
         type = "DeckCustom",
-        position = playerPosition,
+        position = deckPosition,
         rotation = {0, 180, 0},
         sound = false,
         scale = {2, 2, 2}
     })
-    --front player http://cloud-3.steamusercontent.com/ugc/1022822435114075729/621125C5E86CB891467D4DB25B634A3FEE23D5F0/
-    --back player http://cloud-3.steamusercontent.com/ugc/1056604474217944291/DFA22834DEED7ED2CC86A9EA046DE4F7ABCFE9D1/
-    local test1 = "https://drive.google.com/uc?export=view&id=1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq" --https://drive.google.com/file/d/1y4ETcxTGTHzDXMsMhlpMPVaX9A8Y2OJq/view?usp=sharing
-    local test2 = "https://drive.google.com/uc?export=view&id=1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv" --https://drive.google.com/file/d/1h_7wRdjcwm6if-lTmvJBijwpfj_jBLMv/view?usp=sharing
+
     deckObject.setCustomObject({
-        face = test1,
-        back = test2,
-        unique_back = true,--will need this to be true for encounters
-        width = 10,
-        height = 2,
-        number = 11,
-        back_is_hidden = true
-    })
-
-    local deckObject2 = spawnObject({
-        type = "DeckCustom",
-        position = playerPosition2,
-        rotation = {0, 180, 0},
-        sound = false,
-        scale = {2, 2, 2}
-    })
-    deckObject2.setCustomObject({
-        face = test1,
-        back = test2,
-        unique_back = true,--will need this to be true for encounters
-        width = 10,
-        height = 2,
-        number = 11,
-        back_is_hidden = true
-    })
-
-    local deckObject3 = spawnObject({
-        type = "DeckCustom",
-        position = QUEST_DECK_3_POSITION,
-        rotation = {0, 180, 0},
-        sound = false,
-        scale = {2, 2, 2}
-    })
-    deckObject3.setCustomObject({
-        face = test1,
-        back = test2,
-        unique_back = true,--will need this to be true for encounters
-        width = 10,
-        height = 2,
-        number = 11,
-        back_is_hidden = true
-    })
-
-    local deckObject4 = spawnObject({
-        type = "DeckCustom",
-        position = QUEST_DECK_4_POSITION,
-        rotation = {0, 180, 0},
-        sound = false,
-        scale = {2, 2, 2}
-    })
-    deckObject4.setCustomObject({
-        face = test1,
-        back = test2,
-        unique_back = true,--will need this to be true for encounters
-        width = 10,
-        height = 2,
-        number = 11,
-        back_is_hidden = true
+        face = GOOGLE_DRIVE_PREFIX..cardFrontsId,
+        back = GOOGLE_DRIVE_PREFIX..cardBacksId,
+        unique_back = metadata.unique_back,
+        width = metadata.width,
+        height = metadata.height,
+        number = metadata.total,
+        back_is_hidden = metadata.use_back_sheet,
+        sideways = metadata.sideways
     })
 end
 
-function findPlaytestPackRedux(packName)
+function findPlaytestPack(packName)
     for _, pack in pairs(PLAYTEST_DATA.packs) do
-        local title = pack.name.."-"..pack.description
+        local title = pack.name.." - "..pack.description
         if title == packName then
-            log("Found PACK!"..pack.name)
-            return
+            return pack
         end
     end
 end
