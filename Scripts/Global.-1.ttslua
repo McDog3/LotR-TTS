@@ -241,251 +241,139 @@ end
 --                          ALeP UI Creation
 --#########################################################################
 
-function makeUI()
-  log("Building ALeP UI")
-  local alepUI = {}
-
-  table.insert(alepUI, makeSidebar())
-  table.insert(alepUI, makePlayerPanel())
-  table.insert(alepUI, makeEncounterPanel())
-
-  UI.setXmlTable(alepUI)
-  log("Finished ALeP UI")
-end
-
-function makeSidebar()
-    local sidebarLayout = {
-      tag="VerticalLayout",
-      attributes={
-        id="alepUILayout",
-        rectAlignment="MiddleRight",
-        height=100,
-        width=150,
-        color="rgba(0,0,0,0.7)",
-        active=flags.ui.main or false
-      },
-      children={}
+function makeOverlay()
+    log("Building ALeP UI - NEW")
+    local fullPanelLayout = {
+        tag="Panel",
+        attributes = {
+            id="mainLayout",
+            width="680",
+            height="500",
+            rectAlignment="UpperCenter",
+            offsetXY="0 -250",
+            allowDragging="true",
+            showAnimation="FadeIn",
+            showAnimationDelay="2",
+            returnToOriginalPositionWhenReleased="false",
+            color="#f3b86d",--"#8F8478",
+            outline="#635351",
+            outlineSize="2 -2",
+            active=flags.ui.main or false
+        },
+        children = {}
     }
 
-    local playerButton = {
-      tag="Button",
-      attributes={
-        onClick="playerPanelClicked",
-        tooltip="Click to spawn ALeP player cards for playtesting",
-        fontSize=12,
-      },
-      value="Player Cards",
+    local scrollArea = {
+        tag="VerticalScrollView",
+        attributes = {
+            id="mainScrollArea",
+            rectAlignment="LowerCenter",
+            offsetXY="0 -00",
+            scrollSensitivity="40",
+            padding="0 0 50 0",
+            scrollbarColors="#AD9F91|#C9B9A9|#756C63|rgba(0.78,0.78,0.78,0.5)",
+            width="680",
+            height="480",
+            color="#7b8a62"--"#8eb54c"--"#b9de7a"--"#DDDDDD"
+        },
+        children = {}
     }
 
-    local encounterButton = {
-      tag="Button",
-      attributes={
-        onClick="encounterPanelClicked",
-        tooltip="Click to spawn an ALeP quest for playtesting",
-        fontSize=12,
-      },
-      value="Quests",
+    local gridLayout = {
+        tag="GridLayout",
+        attributes = {
+            id="mainGrid",
+            padding="0 0 8 3",
+            spacing="8 8",
+            height="600",
+            cellsize="150 100",
+            childAlignment="UpperCenter"
+        },
+        children = {}
     }
+
+    local playtestData = getObjectFromGUID(PLAYTEST_BUILDER).getVar("PLAYTEST_DATA")
+    for index, pack in pairs(playtestData.packs) do
+        -- If player cards exist in pack
+        if pack.playerCards then
+            local title = pack.name.." "..pack.description.." - Player Cards"
+            local gridButton = {
+                tag="Button",
+                attributes = {
+                    id="button_player_"..index,
+                    padding="5 5 10 0",
+                    textColor="#626262",--"#FFFFFF",
+                    colors="#f3b86d|#C9B9A9|#756C63|rgba(0.78,0.78,0.78,0.5)",--"#AD9F91|#C9B9A9|#756C63|rgba(0.78,0.78,0.78,0.5)",
+                    onClick="gridButtonClicked",
+                    text=title
+                },
+                children = {}
+            }
+            table.insert(gridLayout.children, gridButton)
+        end
+        -- If encounter cards exist in pack
+        if pack.encounterCards then
+            local title = pack.name.." "..pack.description.." - Encounter Deck"
+            local gridButton = {
+                tag="Button",
+                attributes = {
+                    id="button_encounter_"..index,
+                    padding="5 5 10 0",
+                    textColor="#f3b86d",
+                    colors="#626262|#C9B9A9|#756C63|rgba(0.78,0.78,0.78,0.5)",
+                    onClick="gridButtonClicked",
+                    text=title
+                },
+                children = {}
+            }
+            table.insert(gridLayout.children, gridButton)
+        end
+    end
 
     local closeButton = {
-      tag="Button",
-      attributes={
-        onClick="toggleUI",
-        tooltip="Click to close ALeP Deck Builder Menu",
-        fontSize=12
-      },
-      value="Close Menu",
+        tag="Button",
+        attributes = {
+            id="closeButton",
+            width="20",
+            height="20",
+            rectAlignment="UpperRight",
+            color="#990000",
+            textColor="#FFFFFF",
+            text="X",
+            onClick="toggleOverlay"
+        },
+        children = {}
     }
 
-    table.insert(sidebarLayout.children, playerButton)
-    table.insert(sidebarLayout.children, encounterButton)
-    table.insert(sidebarLayout.children, closeButton)
-
-    return sidebarLayout
-end
-
-function makePlayerPanel()
-  local panel = {
-    tag="Panel",
-    attributes={
-      id="playerPanel",
-      width = "30%",
-      height = "15%",
-      active = flags.ui.player or false
-    },
-    children={}
-  }
-
-  local panelLayout = {
-    tag="TableLayout",
-    attributes={
-      color="black",
-    },
-    children={}
-  }
-
-  table.insert(panelLayout.children, playerHeaderRow())
-  table.insert(panelLayout.children, playerBoxRow())
-  table.insert(panelLayout.children, playerSubmitRow())
-  table.insert(panel.children, panelLayout)
-
-  return panel
-end
-
--- Player Panel Assets
-function playerHeaderRow()
-  local header = {
-    tag="Text",
-    value="ALeP Player Cards",
-    attributes={
-      resizeTextForBestFit=true,
-      color="blue"
+    local fullPanelText = {
+        tag="Text",
+        attributes = {
+            text="Choose a Pack",
+            alignment="UpperLeft",
+            fontSize="18",
+            offsetXY="5 0",
+            fontStyle="Bold",
+            color="#626262"--"#FFFFFF"
+        },
+        children = {}
     }
-  }
 
-  return row({
-    cell(header,2)
-  })
+    table.insert(scrollArea.children, gridLayout)
+    table.insert(fullPanelLayout.children, scrollArea)
+    table.insert(fullPanelLayout.children, closeButton)
+    table.insert(fullPanelLayout.children, fullPanelText)
+    UI.setXmlTable({fullPanelLayout})
+    log("Finished ALeP UI - NEW")
 end
 
-function playerBoxRow()
-  local label = {
-    tag="Text",
-    value="Pack",
-    attributes={
-      resizeTextForBestFit=true,
-      color="Blue"
-    }
-  }
-
-  local dropdown = {
-    tag="Dropdown",
-    attributes={
-        onValueChanged="setPlayerBox"
-    },
-    children=generateOptions(setPlayerBox)
-  }
-
-  return row({
-    cell(label),
-    cell(dropdown)
-  })
-end
-
-function setPlayerBox(player, option, id)
-    PLAYER_BOX = option
-end
-
-function playerSubmitRow()
-  local button = {
-    tag="Button",
-    attributes={
-      onClick="playerSubmitClicked",
-      fontSize=18
-    },
-    value="Generate Cards",
-  }
-
-  return row({
-    cell(button, 2)
-  })
-end
-
-function playerSubmitClicked()
-    getObjectFromGUID(PLAYTEST_BUILDER).call("generateALEPPlayerCards", {playerBox = PLAYER_BOX})
-    toggleUI()
-end
-
---encounter
-function makeEncounterPanel()
-  local panel = {
-    tag="Panel",
-    attributes={
-      id="encounterPanel"
-      , width = "30%"
-      , height = "15%"
-      , active =  flags.ui.encounter or false
-    },
-    children={}
-  }
-
-  local panelLayout = {
-    tag="TableLayout",
-    attributes={
-      color="black",
-    },
-    children={}
-  }
-
-  table.insert(panelLayout.children, encounterHeaderRow())
-  table.insert(panelLayout.children, encounterPanelQuestRow())
-  table.insert(panelLayout.children, encounterSubmitRow())
-  table.insert(panel.children, panelLayout)
-
-  return panel
-end
-
-function encounterHeaderRow()
-  local header = {
-    tag="Text",
-    value="ALeP Encounter Cards",
-    attributes={
-      resizeTextForBestFit=true,
-      color="Red"
-    }
-  }
-
-  return row({
-    cell(header,2)
-  })
-end
-
-function encounterPanelQuestRow()
-  local label = {
-    tag="Text",
-    value="Quest",
-    attributes={
-      resizeTextForBestFit=true,
-      color="Red"
-    }
-  }
-
-  local dropdown = {
-    tag="Dropdown",
-    attributes={
-        onValueChanged="setQuest"
-    },
-    children=generateOptions(setQuest)
-  }
-
-  return row({
-    cell(label)
-    , cell(dropdown)
-  })
-end
-
-function setQuest(player, option, id)
-    QUEST_SELECTED = option
-end
-
-function encounterSubmitRow()
-  local button = {
-    tag="Button",
-    attributes={
-      onClick="encounterSubmitClicked",
-      fontSize=18,
-    },
-    value="Generate Cards",
-  }
-
-  return row({
-    cell(button, 2)
-  })
-end
-
-function encounterSubmitClicked()
-    getObjectFromGUID(PLAYTEST_BUILDER).call("generateALEPEncounterCards", {playerBox = QUEST_SELECTED})
-    toggleUI()
+function gridButtonClicked(player, value, id)
+    local buttonIds = {}
+    for token in string.gmatch(id, "[^_]+") do
+        table.insert(buttonIds, token)
+    end
+    log(buttonIds[3])
+    getObjectFromGUID(PLAYTEST_BUILDER).call("generateALEPCards", {packID = buttonIds[3], packType = buttonIds[2]})
+    toggleOverlay()
 end
 
 --Generic UI Helpers
@@ -494,7 +382,7 @@ function generateOptions(setter)
   local first = true
   local options = {}
   local playtestData = getObjectFromGUID(PLAYTEST_BUILDER).getVar("PLAYTEST_DATA")
-  for index, pack in pairs(playtestData.packs) do
+  for _, pack in pairs(playtestData.packs) do
       local title = pack.name.." - "..pack.description
       table.insert(options, option(title))
       if first then
@@ -533,28 +421,15 @@ function cell(contents, colSpan)
 end
 
 -- UI Helper Functions
-function playerPanelClicked()
-  UI.hide("encounterPanel")
-  toggleHidden("playerPanel")
-end
-
-function encounterPanelClicked()
-  UI.hide("playerPanel")
-  toggleHidden("encounterPanel")
+function toggleOverlay()
+    toggleHidden("mainLayout")
 end
 
 function toggleHidden(uiElement)
     local active = UI.getAttribute(uiElement, "active")
-  -- Despite using boolean values, the attribute is a string so I have to use string matching.
-  if active == "true" then
-    UI.hide(uiElement)
-  else
-    UI.show(uiElement)
-  end
-end
-
-function toggleUI()
-  UI.hide("playerPanel")
-  UI.hide("encounterPanel")
-  toggleHidden("alepUILayout")
+    if active == "true" then
+        UI.hide(uiElement)
+    else
+        UI.show(uiElement)
+    end
 end
