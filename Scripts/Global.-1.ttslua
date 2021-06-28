@@ -294,39 +294,41 @@ function makeOverlay()
 
     local playtestData = getObjectFromGUID(PLAYTEST_BUILDER).getVar("PLAYTEST_DATA")
     for index, pack in pairs(playtestData.packs) do
-        -- If player cards exist in pack
-        if pack.playerCards then
-            local title = pack.name.." "..pack.description.." - Player Cards"
-            local gridButton = {
-                tag="Button",
-                attributes = {
-                    id="button_player_"..index,
-                    padding="5 5 10 0",
-                    textColor="#626262",--"#FFFFFF",
-                    colors="#f3b86d|#C9B9A9|#756C63|rgba(0.78,0.78,0.78,0.5)",--"#AD9F91|#C9B9A9|#756C63|rgba(0.78,0.78,0.78,0.5)",
-                    onClick="gridButtonClicked",
-                    text=title
-                },
-                children = {}
-            }
-            table.insert(gridLayout.children, gridButton)
-        end
-        -- If encounter cards exist in pack
-        if pack.encounterCards then
-            local title = pack.name.." "..pack.description.." - Encounter Deck"
-            local gridButton = {
-                tag="Button",
-                attributes = {
-                    id="button_encounter_"..index,
-                    padding="5 5 10 0",
-                    textColor="#f3b86d",
-                    colors="#626262|#C9B9A9|#756C63|rgba(0.78,0.78,0.78,0.5)",
-                    onClick="gridButtonClicked",
-                    text=title
-                },
-                children = {}
-            }
-            table.insert(gridLayout.children, gridButton)
+        if pack.active then
+            -- If player cards exist in pack
+            if pack.playerCards then
+                local title = pack.name.." "..pack.description.." - Player Cards"
+                local gridButton = {
+                    tag="Button",
+                    attributes = {
+                        id="button_player_"..index,
+                        padding="5 5 10 0",
+                        textColor="#626262",--"#FFFFFF",
+                        colors="#f3b86d|#C9B9A9|#756C63|rgba(0.78,0.78,0.78,0.5)",--"#AD9F91|#C9B9A9|#756C63|rgba(0.78,0.78,0.78,0.5)",
+                        onClick="gridButtonClicked",
+                        text=title
+                    },
+                    children = {}
+                }
+                table.insert(gridLayout.children, gridButton)
+            end
+            -- If encounter cards exist in pack
+            if pack.encounterCards then
+                local title = pack.name.." "..pack.description.." - Encounter Deck"
+                local gridButton = {
+                    tag="Button",
+                    attributes = {
+                        id="button_encounter_"..index,
+                        padding="5 5 10 0",
+                        textColor="#f3b86d",
+                        colors="#626262|#91867a|#756C63|rgba(0.78,0.78,0.78,0.5)",
+                        onClick="gridButtonClicked",
+                        text=title
+                    },
+                    children = {}
+                }
+                table.insert(gridLayout.children, gridButton)
+            end
         end
     end
 
@@ -371,27 +373,11 @@ function gridButtonClicked(player, value, id)
     for token in string.gmatch(id, "[^_]+") do
         table.insert(buttonIds, token)
     end
-    log(buttonIds[3])
     getObjectFromGUID(PLAYTEST_BUILDER).call("generateALEPCards", {packID = buttonIds[3], packType = buttonIds[2]})
     toggleOverlay()
 end
 
 --Generic UI Helpers
-
-function generateOptions(setter)
-  local first = true
-  local options = {}
-  local playtestData = getObjectFromGUID(PLAYTEST_BUILDER).getVar("PLAYTEST_DATA")
-  for _, pack in pairs(playtestData.packs) do
-      local title = pack.name.." - "..pack.description
-      table.insert(options, option(title))
-      if first then
-          setter(nil, title, nil)
-          first = false
-      end
-  end
-  return options
-end
 
 function option(value)
   return {

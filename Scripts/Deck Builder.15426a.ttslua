@@ -1,3 +1,6 @@
+--Feature flags
+PLAYTEST_BUTTON_FEATURE_FLAG = false
+
 -- Local Positions
 BUTTON_POSITION = {-6.75,0.6,7.75}
 -- Global Positions
@@ -9,6 +12,7 @@ PLAYER_DECK_1_POSITION = {-87,4,112}
 PLAYER_DECK_2_POSITION = {-87,4,105}
 
 QUEST_DECK_POSITIONS = {QUEST_DECK_1_POSITION, QUEST_DECK_2_POSITION, QUEST_DECK_3_POSITION, QUEST_DECK_4_POSITION}
+PLAYER_DECK_POSITIONS = {PLAYER_DECK_1_POSITION, PLAYER_DECK_2_POSITION}
 
 GOOGLE_DRIVE_PREFIX = "https://drive.google.com/uc?export=view&id="
 
@@ -17,13 +21,306 @@ DEFAULT_ENCOUNTER_BACK_URL = "http://cloud-3.steamusercontent.com/ugc/1056604474
 
 PLAYTEST_DATA = {
     packs = {
-        pack1 = {
-            name = "The Aldburg Plot",
-            description = "(AP 1)",
+        packREL1 = {
+            name = "Ambush at Erelas",
+            description = "(REL)",
+            active = true,
             playerCards = true,
             encounterCards = true,
             links = {
                 quest_decks = 4,
+                player_decks = 2,
+                quest_1 = {
+                    description = "Quest Cards",
+                    front = "12IwwYCNq3PvX-6yYOPhFu7M2JLwlIjLD",
+                    back = "1Xp1MbvsdGFYYACuSY0GJSPLhRYYmsAMv",
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 3,
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_2 = {
+                    description = "Side Quests",
+                    front = "1X7kBudxQCBU4V7puNzTNeuiW-uFRTRkU",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 2,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_3 = {
+                    description = "Main Deck",
+                    front = "1zrTByW6xVxEaUojZEzIHm4SHE6fUmj6V",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 5,
+                        total = 42,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                quest_4 = {
+                    description = "Rules and Double-Sided Objectives",
+                    front = "13DV666qA30uATbvvJOAiMsYiEtnw4pnx",
+                    back = "1IOYfIdkdRyuVEgR1CuYaSl7f-scadkSI",
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 4,
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                player_1 = {
+                    description = "Single-Sided Player Cards",
+                    front = "1-OyyWGZJg9DL4JLRIbVM7YTcagf_4C1P",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 2,
+                        total = 20,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                player_2 = {
+                    description = "Double-Sided Player Cards",
+                    front = "1z35OBxJaOQ11oLt6-VKLrXz4-x-Q950z",
+                    back = "1pxeyWFoXKqaqVlL5mwSrVN1hG1G8lN7B",
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 2,
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                }
+            }
+        },
+        packREL2 = {
+            name = "Battle for the Beacon",
+            description = "(REL)",
+            active = true,
+            playerCards = false,
+            encounterCards = true,
+            links = {
+                quest_decks = 4,
+                player_decks = 2,
+                quest_1 = {
+                    description = "Quest Cards",
+                    front = "1C4YZK7HIEcwWQol6DWsmqYUZ6pmswcoE",
+                    back = "1RY-2PWcLhedNCrZVTXyyMIQVsIA_zMyZ",
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 4,
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_2 = {
+                    description = "Side Quests",
+                    front = "1ModdGAEWPaGOoUeaHI3UzCpmHlZsJI5w",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 2,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_3 = {
+                    description = "Main Deck",
+                    front = "1afWdBth4x4CYV9-x7Y-Oy7oL-WmweDMf",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 5,
+                        total = 43,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                quest_4 = {
+                    description = "Rules and Double-Sided Objectives",
+                    front = "1CspAsOgJPksocI-HkdXcwkAMAI0btL2J",
+                    back = "1oFmlpRGVfeoRXG8fRKAk9coD8llvj0IU",
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 5,
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                }
+            }
+        },
+        packREL3 = {
+            name = "The Horse Lord's Ire",
+            description = "(REL)",
+            active = true,
+            playerCards = false,
+            encounterCards = true,
+            links = {
+                quest_decks = 4,
+                player_decks = 2,
+                quest_1 = {
+                    description = "Quest Cards",
+                    front = "12IwwYCNq3PvX-6yYOPhFu7M2JLwlIjLD",
+                    back = "1Xp1MbvsdGFYYACuSY0GJSPLhRYYmsAMv",
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 2,
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_2 = {
+                    description = "Side Quests",
+                    front = "1XTRXaXYv6WPLbwJM-etBIw7yFMzEVBuj",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 2,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_3 = {
+                    description = "Main Deck",
+                    front = "1GgD3injFU_zD6945ZKA-_gkZ05sEERmr",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 4,
+                        total = 35,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                quest_4 = {
+                    description = "Rules and Double-Sided Objectives",
+                    front = "1vuoLvD-O6LPoY4ngT1_Gv8FQbQ3W0CgT",
+                    back = "11LCumgYlOBe15MczG0BDzoDriiOFSRGm",
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 9,
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                }
+            }
+        },
+        packREL4 = {
+            name = "The Aldburg Plot",
+            description = "(REL)",
+            active = true,
+            playerCards = true,
+            encounterCards = true,
+            links = {
+                quest_decks = 4,
+                player_decks = 1,
+                quest_1 = {
+                    description = "Quest Cards",
+                    front = "1VLi_KmEESFwayT6o0ZTcRKkeOUjdQPH2",
+                    back = "12GwmzYeeEXFMdn-nhlKWqJWCjDMEUpWP",
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 3,
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_2 = {
+                    description = "Side Quests",
+                    front = "17znAZ6XwB9NG43gjFwLK5Xq6Zqzwm-8U",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 6,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_3 = {
+                    description = "Main Deck",
+                    front = "1LFeG6Xeut5WZV35wvwo6TlaBfHcfH08x",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 4,
+                        total = 32,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                quest_4 = {
+                    description = "Rules and Double-Sided Objectives",
+                    front = "1uPDctH3XxonO2TxJ7ZoB1pupiJi-gNc-",
+                    back = "1GW7NVC1wKNaDEhg-k_Lm7cELCzk7zlVI",
+                    metadata = {
+                        width = 10,
+                        height = 2,
+                        total = 14,
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                player_1 = {
+                    description = "Single-Sided Player Cards",
+                    front = "1QcEqdFZPYKzYh0cVbgh5s61s7oqB7SUO",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 2,
+                        total = 11,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                }
+            }
+        },
+        pack1 = {
+            name = "The Aldburg Plot",
+            description = "(AP 1)",
+            active = false,
+            playerCards = true,
+            encounterCards = true,
+            links = {
+                quest_decks = 4,
+                player_decks = 1,
                 quest_1 = {
                     description = "Quest Cards",
                     front = "16ga8BK_zcMeu4h3qwmuLtwLuUj7dPZI2",
@@ -59,7 +356,7 @@ PLAYTEST_DATA = {
                         height = 4,
                         total = 32,
                         is_back_multiple_cards = false,
-                        use_back_sheet = tfrue,
+                        use_back_sheet = true,
                         sideways = false
                     }
                 },
@@ -76,7 +373,7 @@ PLAYTEST_DATA = {
                         sideways = false
                     }
                 },
-                player = {
+                player_1 = {
                     front = "11m7C-sVcmIEGTawLA5CiwGZiNhtnwbcm",
                     back = nil,
                     metadata = {
@@ -93,239 +390,16 @@ PLAYTEST_DATA = {
         pack2 = {
             name = "Fire on the Eastemnet",
             description = "(AP 2)",
+            active = true,
             playerCards = true,
-            encounterCards = true,
-            links = nil
-        },
-        pack3 = {
-            name = "The Gap of Rohan",
-            description = "(AP 3)",
-            playerCards = true,
-            encounterCards = true,
-            links = nil
-        },
-        pack4 = {
-            name = "The Glittering Caves",
-            description = "(AP 4)",
-            playerCards = true,
-            encounterCards = true,
-            links = nil
-        },
-        pack5 = {
-            name = "Mustering of the Rohirrim",
-            description = "(AP 5)",
-            playerCards = true,
-            encounterCards = true,
-            links = nil
-        },
-        pack6 = {
-            name = "Blood in the Isen",
-            description = "(AP 6)",
-            playerCards = true,
-            encounterCards = true,
-            links = nil
-        },
-        pack7 = {
-            name = "Scouring of the Shire",
-            description = "(GenCon 2021)",
-            playerCards = true,
-            encounterCards = true,
-            links = nil
-        },
-        pack8 = {
-            name = "Ambush at Erelas",
-            description = "(Deluxe 1)",
-            playerCards = false,
             encounterCards = true,
             links = {
                 quest_decks = 4,
+                player_decks = 1,
                 quest_1 = {
                     description = "Quest Cards",
-                    front = "1PPqDuIR1YLj2W_by7h4UBRYxvcoa1vKj",
-                    back = "1cBIVKbIgWeHD5tm9rfqmBV6iG2SnuSMj",
-                    metadata = {
-                        width = 10,
-                        height = 1,
-                        total = 2,
-                        is_back_multiple_cards = true,
-                        use_back_sheet = true,
-                        sideways = true
-                    }
-                },
-                quest_2 = {
-                    description = "Side Quests",
-                    front = "1E_ug86-m9gwwik7pYlF5E5d1i8Pa7ro1",
-                    back = nil,
-                    metadata = {
-                        width = 10,
-                        height = 1,
-                        total = 2,
-                        is_back_multiple_cards = false,
-                        use_back_sheet = true,
-                        sideways = true
-                    }
-                },
-                quest_3 = {
-                    description = "Main Deck",
-                    front = "1kZDTjqkjno806AQg6pC-_cjdgooijzKS",
-                    back = nil,
-                    metadata = {
-                        width = 10,
-                        height = 4,
-                        total = 35,
-                        is_back_multiple_cards = false,
-                        use_back_sheet = tfrue,
-                        sideways = false
-                    }
-                },
-                quest_4 = {
-                    description = "Rules and Double-Sided Objectives",
-                    front = "1fCthdDNCcUrtYCKLhFgL_0mmshdIk8PB",
-                    back = "1DyT-kwSlBVg_6z7ctM6T_GRS0yNgqSQG",
-                    metadata = {
-                        width = 10,
-                        height = 1,
-                        total = 9,
-                        is_back_multiple_cards = true,
-                        use_back_sheet = true,
-                        sideways = false
-                    }
-                }
-            }
-        },
-        pack9 = {
-            name = "Ambush at Erelas EZ",
-            description = "(Deluxe 1)",
-            playerCards = false,
-            encounterCards = true,
-            links = {
-                quest_decks = 4,
-                quest_1 = {
-                    description = "Quest Cards",
-                    front = "1PPqDuIR1YLj2W_by7h4UBRYxvcoa1vKj",
-                    back = "1cBIVKbIgWeHD5tm9rfqmBV6iG2SnuSMj",
-                    metadata = {
-                        width = 10,
-                        height = 1,
-                        total = 2,
-                        is_back_multiple_cards = true,
-                        use_back_sheet = true,
-                        sideways = true
-                    }
-                },
-                quest_2 = {
-                    description = "Side Quests",
-                    front = "1E_ug86-m9gwwik7pYlF5E5d1i8Pa7ro1",
-                    back = nil,
-                    metadata = {
-                        width = 10,
-                        height = 1,
-                        total = 2,
-                        is_back_multiple_cards = false,
-                        use_back_sheet = true,
-                        sideways = true
-                    }
-                },
-                quest_3 = {
-                    description = "Main Deck",
-                    front = "10gtTihb5gSlBPdrGzBMeU05lHU8GHcY7",
-                    back = nil,
-                    metadata = {
-                        width = 10,
-                        height = 3,
-                        total = 27,
-                        is_back_multiple_cards = false,
-                        use_back_sheet = true,
-                        sideways = false
-                    }
-                },
-                quest_4 = {
-                    description = "Rules and Double-Sided Objectives",
-                    front = "1fCthdDNCcUrtYCKLhFgL_0mmshdIk8PB",
-                    back = "1DyT-kwSlBVg_6z7ctM6T_GRS0yNgqSQG",
-                    metadata = {
-                        width = 10,
-                        height = 1,
-                        total = 9,
-                        is_back_multiple_cards = true,
-                        use_back_sheet = true,
-                        sideways = false
-                    }
-                }
-            }
-        },
-        pack9 = {
-            name = "Battle for the Beacon EZ",
-            description = "(Deluxe 2)",
-            playerCards = false,
-            encounterCards = true,
-            links = {
-                quest_decks = 4,
-                quest_1 = {
-                    description = "Quest Cards",
-                    front = "1HtjUQKtLYY8iEBI0UVCKxA1PILiLWyPY",
-                    back = "1QeEy7g00gTzq_XglGpK5S7BYHELNUVaz",
-                    metadata = {
-                        width = 10,
-                        height = 1,
-                        total = 4,
-                        is_back_multiple_cards = true,
-                        use_back_sheet = true,
-                        sideways = true
-                    }
-                },
-                quest_2 = {
-                    description = "Side Quests",
-                    front = "1ZCfG7sjPcIJZ-pgNn8q15RZVvZBpDp03",
-                    back = nil,
-                    metadata = {
-                        width = 10,
-                        height = 1,
-                        total = 2,
-                        is_back_multiple_cards = false,
-                        use_back_sheet = true,
-                        sideways = true
-                    }
-                },
-                quest_3 = {
-                    description = "Main Deck",
-                    front = "1jOFKqwjNMaCLm1JPuR21T5ednKoJXtIf",
-                    back = nil,
-                    metadata = {
-                        width = 10,
-                        height = 4,
-                        total = 32,
-                        is_back_multiple_cards = false,
-                        use_back_sheet = true,
-                        sideways = false
-                    }
-                },
-                quest_4 = {
-                    description = "Rules and Double-Sided Objectives",
-                    front = "1ua5mXO9nX4e2h4zN2OkeTgTtD6tIPWnZ",
-                    back = "1qidxB_GWT6CyJFIdSX3xsl-xxYukek5P",
-                    metadata = {
-                        width = 10,
-                        height = 1,
-                        total = 5,
-                        is_back_multiple_cards = true,
-                        use_back_sheet = true,
-                        sideways = false
-                    }
-                }
-            }
-        },
-        pack10 = {
-            name = "The Horse Lord's Ire EZ",
-            description = "(Deluxe 3)",
-            playerCards = false,
-            encounterCards = true,
-            links = {
-                quest_decks = 4,
-                quest_1 = {
-                    description = "Quest Cards",
-                    front = "1Vg_0ibe9sgoQOnjUFJbxHDtMeNG2Zew8",
-                    back = "1dpS5RW83Yk0c2Yhm-s4hll_dyZmOjS7I",
+                    front = "1RNa6s_gZCpze5bBm5R5mLCRlAx8a1RUR",
+                    back = "1HJWkHCoeqFli5-mOhD5tAFBU_9qkbMaV",
                     metadata = {
                         width = 10,
                         height = 1,
@@ -337,12 +411,12 @@ PLAYTEST_DATA = {
                 },
                 quest_2 = {
                     description = "Side Quests",
-                    front = "1PiqjA72-rYyscEe5Xo-572lHqSHZkESj",
+                    front = "1A9ZPzGTjCogP9XzcYP6NlWBuZK7b6xcP",
                     back = nil,
                     metadata = {
                         width = 10,
                         height = 1,
-                        total = 2,
+                        total = 2, --TODO: should generate as a card instead of a deck
                         is_back_multiple_cards = false,
                         use_back_sheet = true,
                         sideways = true
@@ -350,12 +424,12 @@ PLAYTEST_DATA = {
                 },
                 quest_3 = {
                     description = "Main Deck",
-                    front = "1knXoh8Y8Q_WeRV04Zg6RGn1rHzV99ETZ",
+                    front = "17JLsGRYZuizgSV6yA0ers1qp-7FtvrjP",
                     back = nil,
                     metadata = {
                         width = 10,
-                        height = 4,
-                        total = 34,
+                        height = 3,
+                        total = 30,
                         is_back_multiple_cards = false,
                         use_back_sheet = true,
                         sideways = false
@@ -363,13 +437,199 @@ PLAYTEST_DATA = {
                 },
                 quest_4 = {
                     description = "Rules and Double-Sided Objectives",
-                    front = "1YnA0Ndb4H2VpO98x_JIoZ5fWiQEIKwMO",
-                    back = "1Fi8V076Hyu71wu_NtD8SBDsRDy2RpKMz",
+                    front = "1s2-75ipyjHvF5bfhzsnRU8nfBid7b9SX",
+                    back = "1NPKBIwpaIpeSaTqSnS68KrLWLbCLBCcG",
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 2, --TODO: should generate as a card instead of a deck
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                player_1 = {
+                    front = "16PfPNO_-y6mElsyAjeJJ8oJOK8RphsWK",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 2,
+                        total = 13,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                }
+            }
+        },
+        pack3 = {
+            name = "The Gap of Rohan",
+            description = "(AP 3)",
+            active = true,
+            playerCards = true,
+            encounterCards = true,
+            links = {
+                quest_decks = 3,
+                player_decks = 1,
+                quest_1 = {
+                    description = "Quest Cards",
+                    front = "18L9dnGhAoQulpQrDbNMRVcGVBXTqmPST",
+                    back = "1AptqmGoSMnyQkGLaj-SuFbH3fZO09jYI",
                     metadata = {
                         width = 10,
                         height = 1,
                         total = 4,
                         is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_2 = {
+                    description = "Side Quests",
+                    front = "199_2P-BZxS_Pu-LdXyflkezZAzjceMl9",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 2, --TODO: should generate as a card instead of a deck
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_3 = {
+                    description = "Main Deck",
+                    front = "1k8XgLef3FZBGuXxwDAX5qR20xlfFI_4z",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 3,
+                        total = 25,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                quest_4 = {
+                    description = "Rules and Double-Sided Objectives",
+                    front = nil,
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 2, --TODO: should generate as a card instead of a deck
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                player_1 = {
+                    front = "1ib4MdPOcNSB5ot1HU3LsY2chLXoiCt-G",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 2,
+                        total = 11,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                }
+            }
+        },
+        pack4 = {
+            name = "The Glittering Caves",
+            description = "(AP 4)",
+            active = false,
+            playerCards = true,
+            encounterCards = true,
+            links = nil
+        },
+        pack5 = {
+            name = "Mustering of the Rohirrim",
+            description = "(AP 5)",
+            active = false,
+            playerCards = true,
+            encounterCards = true,
+            links = nil
+        },
+        pack6 = {
+            name = "Blood in the Isen",
+            description = "(AP 6)",
+            active = false,
+            playerCards = true,
+            encounterCards = true,
+            links = nil
+        },
+        pack7 = {
+            name = "Scouring of the Shire",
+            description = "(GenCon 2021)",
+            active = true,
+            playerCards = true,
+            encounterCards = true,
+            links = {
+                quest_decks = 4,
+                player_decks = 1,
+                quest_1 = {
+                    description = "Quest Cards and Double-Sided Side Quests",
+                    front = "1humHeLkZ2g1Sq9xgSWCRTDAnFy-OnHYs",
+                    back = "1DF7IJv11nsYffCm2-VDtPseQ2u4qo2tT",
+                    metadata = {
+                        width = 10,
+                        height = 2,
+                        total = 12,
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_2 = {
+                    description = "Side Quests",
+                    front = "18ottMnOPYC11urFMCOwFuaGDkTSBUGtv",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 2, --TODO: should generate as a card instead of a deck
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = true
+                    }
+                },
+                quest_3 = {
+                    description = "Main Deck",
+                    front = "1VOQa6Uz2EHPwPFTF6fJus5xmKgS3SlrB",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 6,
+                        total = 51,
+                        is_back_multiple_cards = false,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                quest_4 = {
+                    description = "Rules and Double-Sided Objectives",
+                    front = "1VFQebFuDguyUa3iFPW7i3-kldm-394ip",
+                    back = "1YnS1CWR4nNkW_DPfEVdSblBp6bkhYq71",
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 2, --TODO: should generate as a card instead of a deck
+                        is_back_multiple_cards = true,
+                        use_back_sheet = true,
+                        sideways = false
+                    }
+                },
+                player_1 = {
+                    front = "1xV_4yd5zZwzAgVXRRFHJlZlwj_d0x-yk",
+                    back = nil,
+                    metadata = {
+                        width = 10,
+                        height = 1,
+                        total = 6,
+                        is_back_multiple_cards = false,
                         use_back_sheet = true,
                         sideways = false
                     }
@@ -381,10 +641,12 @@ PLAYTEST_DATA = {
 }
 
 function onLoad()
-    log("PlaytestBuilder Loading...")
-    Global.call("makeOverlay")
-    createBuildDeckButton()
-    log("PlaytestBuilder Loaded Successfully!")
+    if PLAYTEST_BUTTON_FEATURE_FLAG then
+        log("PlaytestBuilder Loading...")
+        Global.call("makeOverlay")
+        createBuildDeckButton()
+        log("PlaytestBuilder Loaded Successfully!")
+    end
 end
 
 
@@ -419,12 +681,17 @@ end
 
 function generateALEPPlayerCards(packData)
     if packData ~= nil and packData.links ~= nil then
-        local faceURL = GOOGLE_DRIVE_PREFIX..packData.links.player.front
-        local backURL = DEFAULT_PLAYER_BACK_URL
-        if packData.links.player.back ~= nil then
-            backURL = GOOGLE_DRIVE_PREFIX..packData.links.player.back
+        local numDecks = packData.links.player_decks
+        for i=1, numDecks, 1 do
+            local deckPosition = PLAYER_DECK_POSITIONS[i]
+            local playerDeckData = packData.links["player_"..i]
+            local faceURL = GOOGLE_DRIVE_PREFIX..playerDeckData.front
+            local backURL = DEFAULT_PLAYER_BACK_URL
+            if playerDeckData.back ~= nil then
+                backURL = GOOGLE_DRIVE_PREFIX..playerDeckData.back
+            end
+            spawnDeck(deckPosition, faceURL, backURL, playerDeckData.metadata)
         end
-        spawnDeck(PLAYER_DECK_1_POSITION, faceURL, backURL, packData.links.player.metadata)
     else
         broadcastToAll("Unable to locate ALeP Metadata for selected pack", {0.5,0.5,0.5})
     end
