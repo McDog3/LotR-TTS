@@ -1,6 +1,7 @@
 --[[ Lua code. See documentation: https://api.tabletopsimulator.com/ --]]
 --The "Build Deck" button at the top-left
 ZONE_BAG_GUID = '36c7bf'
+ALEP_BAG_GUID = '4d0aab'
 
 CACHE = {
     object = {},
@@ -57,6 +58,15 @@ function buildBagList()
     CACHE.bag = {}
     if zone ~= nil then
         local objects = zone.getObjects()
+        for i = 1, #objects do
+            if objects[i].tag == 'Bag' then
+                CACHE.bag[getKey(objects[i].getName())] = objects[i]
+            end
+        end
+    end
+    local alepBags = getObjectCache(ALEP_BAG_GUID)
+    if alepBags ~= nil then
+        local objects = alepBags.getObjects()
         for i = 1, #objects do
             if objects[i].tag == 'Bag' then
                 CACHE.bag[getKey(objects[i].getName())] = objects[i]
@@ -291,6 +301,7 @@ function cardReadCallback(req)
   if CARD_LISTS.heroCardList[JsonCardRes.code] ~= nil then
       CARD_LISTS.heroCardList[JsonCardRes.code].cardName = getKey(JsonCardRes.name)
       CARD_LISTS.heroCardList[JsonCardRes.code].packName = getKey(JsonCardRes.pack_name)
+      CARD_LISTS.heroCardList[JsonCardRes.code].cardId = JsonCardRes.octgnid
   end
 
   if CARD_LISTS.deckCardList[JsonCardRes.code] ~= nil then
@@ -326,33 +337,50 @@ end
 
 function createDeck()
   for k,v in pairs(CARD_LISTS.heroCardList) do
-    searchForCard(v.cardName, v.packName, v.cardCount, v.cardType)
+    searchForCard(v.cardId, v.cardName, v.packName, v.cardCount, v.cardType)
   end
   for k,v in pairs(CARD_LISTS.deckCardList) do
-    searchForCard(v.cardName, v.packName, v.cardCount, v.cardType)
+    searchForCard(nil, v.cardName, v.packName, v.cardCount, v.cardType)
   end
   for k,v in pairs(CARD_LISTS.sideboardCardList) do
-    searchForCard(v.cardName, v.packName, v.cardCount, v.cardType)
+    searchForCard(nil, v.cardName, v.packName, v.cardCount, v.cardType)
   end
 end
 
-function searchForCard(cardName, packName, cardCount, type)
-  local bag = CACHE.bag[packName].clone({})
+function searchForCard(cardId, cardName, packName, cardCount, type)
+  local bag = CACHE.bag[packName]
   local allCards = bag.getObjects()
 
+  local isMotKPack = packName == 'messengerofthekingallies'
+
   for k,v in pairs(allCards) do
-    if getKey(v.name) == cardName then
-        bag.takeObject({
-          position = {0, 1.5, 0},
-          callback = 'cardTaken',
-          callback_owner=self,
-          index = v.index,
-          smooth = false,
-          params = { cardName, cardCount, type, bag, v.guid }
-        })
-        log('Added '.. cardCount .. ' of ' .. cardName .. ' to ' .. type .. ' from ' .. packName)
-        return
-    end
+      if isMotKPack then
+          if v.description == cardId then
+              bag.takeObject({
+                position = {0, 1.5, 0},
+                callback = 'cardTaken',
+                callback_owner=self,
+                index = v.index,
+                smooth = false,
+                params = { cardName, cardCount, type, bag, v.guid }
+              })
+              log('Added '.. cardCount .. ' of ' .. cardName .. ' to ' .. type .. ' from ' .. packName)
+              return
+          end
+      else
+          if getKey(v.name) == cardName then
+              bag.takeObject({
+                  position = {0, 1.5, 0},
+                  callback = 'cardTaken',
+                  callback_owner=self,
+                  index = v.index,
+                  smooth = false,
+                  params = { cardName, cardCount, type, bag, v.guid }
+              })
+              log('Added '.. cardCount .. ' of ' .. cardName .. ' to ' .. type .. ' from ' .. packName)
+              return
+          end
+      end
   end
   broadcastToAll("Card not found: "..cardName.." from "..packName, {0.5,0.5,0.5})
 end
