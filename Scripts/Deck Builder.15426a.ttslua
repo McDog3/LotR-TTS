@@ -1,5 +1,5 @@
 --Feature flags
-PLAYTEST_BUTTON_FEATURE_FLAG = false
+PLAYTEST_BUTTON_FEATURE_FLAG = true
 
 -- Local Positions
 BUTTON_POSITION = {-6.75,0.6,7.75}
@@ -24,7 +24,7 @@ PLAYTEST_DATA = {
         packREL1 = {
             name = "Ambush at Erelas",
             description = "(REL)",
-            active = true,
+            active = false,
             playerCards = true,
             encounterCards = true,
             links = {
@@ -113,7 +113,7 @@ PLAYTEST_DATA = {
         packREL2 = {
             name = "Battle for the Beacon",
             description = "(REL)",
-            active = true,
+            active = false,
             playerCards = false,
             encounterCards = true,
             links = {
@@ -176,7 +176,7 @@ PLAYTEST_DATA = {
         packREL3 = {
             name = "The Horse Lord's Ire",
             description = "(REL)",
-            active = true,
+            active = false,
             playerCards = false,
             encounterCards = true,
             links = {
@@ -239,7 +239,7 @@ PLAYTEST_DATA = {
         packREL4 = {
             name = "The Aldburg Plot",
             description = "(REL)",
-            active = true,
+            active = false,
             playerCards = true,
             encounterCards = true,
             links = {
@@ -659,8 +659,10 @@ function createBuildDeckButton()
   button_parameters.width = 1400
   button_parameters.height = 300
   button_parameters.tooltip = "Click to generate ALeP playtest cards!"
-  button_parameters.label = "Generate ALeP Deck"
+  button_parameters.label = "Playtest for ALeP!"
   button_parameters.scale = {1,1.5,1.5}
+  button_parameters.color = {0.53,0.36,0.59}
+  button_parameters.font_color = {1,1,1}
   self.createButton(button_parameters)
 end
 
